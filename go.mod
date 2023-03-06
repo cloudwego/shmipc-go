@@ -7,6 +7,6 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/shirou/gopsutil/v3 v3.22.1
 	github.com/stretchr/testify v1.8.0
-	golang.org/x/sys v0.0.0-20220111092808-5a964db01320
+	golang.org/x/sys v0.1.0
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )
