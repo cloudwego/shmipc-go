@@ -1,0 +1,43 @@
+name: Tests
+
+on: [ push, pull_request ]
+
+jobs:
+  unit-scenario-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.15'
+      - name: Unit Test
+        run: go test -gcflags=-l -covermode=atomic -coverprofile=coverage.txt
+      - name: Codecov
+        run: bash <(curl -s https://codecov.io/bash)
+
+  benchmark-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.15'
+      - name: Benchmark
+        run: go test -gcflags='all=-N -l' -bench=. -benchmem -run=none
+
+  compatibility-test:
+    strategy:
+      matrix:
+        go: [ 1.13, 1.14, 1.15, 1.16, 1.18, 1.19 ]
+        os: [ X64 ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Unit Test
+        run: go test -gcflags=-l -covermode=atomic
