@@ -1,4 +1,4 @@
-module github/cloudwego/shmipc-go
+module github.com/cloudwego/shmipc-go
 
 go 1.15
 

@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"github/cloudwego/shmipc-go"
 	"math"
 	"math/rand"
 	"net/http"
@@ -30,7 +29,7 @@ import (
 	"time"
 
 	"github.com/cloudwego/shmipc-go"
-	"github.com/cloudwego/shmipc/example/best_practice/idl"
+	"github.com/cloudwego/shmipc-go/example/best_practice/idl"
 )
 
 var (

@@ -17,8 +17,6 @@
 package main
 
 import (
-	"github.com/cloudwego/shmipc-go"
-	"github.com/cloudwego/shmipc/example/best_practice/idl"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -28,6 +26,9 @@ import (
 	"sync/atomic"
 	"syscall"
 	"time"
+
+	"github.com/cloudwego/shmipc-go"
+	"github.com/cloudwego/shmipc-go/example/best_practice/idl"
 )
 
 var (
