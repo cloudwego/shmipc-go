@@ -55,8 +55,8 @@ const (
 	memfdDataLen = 4
 	memfdCount   = 2
 
-	buferPathSuffix = "_buffer"
-	unixNetwork     = "unix"
+	bufferPathSuffix = "_buffer"
+	unixNetwork      = "unix"
 
 	hotRestartCheckTimeout  = 2 * time.Second
 	hotRestartCheckInterval = 100 * time.Millisecond

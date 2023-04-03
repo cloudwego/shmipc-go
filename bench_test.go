@@ -71,7 +71,7 @@ func newBenchmarkClientServer(likelySize uint32) (client, server *Session) {
 		defer ln.Close()
 		server, err = Server(conn, config)
 		if err != nil {
-			panic("create shmipc server faield:" + err.Error())
+			panic("create shmipc server failed:" + err.Error())
 		}
 		serverStartNotifyCh <- struct{}{}
 	}()

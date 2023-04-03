@@ -21,7 +21,7 @@ import (
 	"net"
 	"sync"
 
-	"github.com/cloudwego/shmipc-go"
+	shmipc "github.com/cloudwego/shmipc-go"
 )
 
 // the idl is the Request struct and Response struct.

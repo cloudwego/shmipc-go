@@ -42,7 +42,7 @@ func main() {
 	}
 	defer ln.Close()
 
-	// 2. accept a unix doamin socket
+	// 2. accept a unix domain socket
 	conn, err := ln.Accept()
 	if err != nil {
 		panic(err)

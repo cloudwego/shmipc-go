@@ -57,7 +57,7 @@ var (
 )
 
 // todo mmap interface ?
-//bufferManager's layout in share memory: listSize 2 byte | bufferList  n byte
+// bufferManager's layout in share memory: listSize 2 byte | bufferList  n byte
 type bufferManager struct {
 	//ascending ordered by list.capPerBuffer
 	lists        []*bufferList
@@ -75,8 +75,8 @@ type globalBufferManager struct {
 	bms map[string]*bufferManager
 }
 
-//bufferList's layout in share memory: size 4 byte | cap 4 byte | head 4 byte | tail 4 byte | capPerBuffer 4 byte | bufferRegion n bye
-//thead safe, lock free. support push && pop concurrently even cross different process.
+// bufferList's layout in share memory: size 4 byte | cap 4 byte | head 4 byte | tail 4 byte | capPerBuffer 4 byte | bufferRegion n bye
+// thead safe, lock free. support push && pop concurrently even cross different process.
 type bufferList struct {
 	base uintptr
 	// the number of free buffer
@@ -97,7 +97,7 @@ type bufferList struct {
 	offsetInShm uint32
 }
 
-//A SizePercentPair describe a buffer list's specification
+// A SizePercentPair describe a buffer list's specification
 type SizePercentPair struct {
 	//A single buffer slice's capacity of buffer list,
 	Size uint32
@@ -342,7 +342,7 @@ func countBufferListMemSize(bufferNum, capPerBuffer uint32) uint32 {
 
 func createFreeBufferList(bufferNum, capPerBuffer uint32, mem []byte, offsetInMem uint32) (*bufferList, error) {
 	if bufferNum == 0 || capPerBuffer == 0 {
-		return nil, fmt.Errorf("bufferNum:%d or capPerBuffer:%d cound not be 0 ", bufferNum, capPerBuffer)
+		return nil, fmt.Errorf("bufferNum:%d or capPerBuffer:%d cannot be 0 ", bufferNum, capPerBuffer)
 	}
 	atLeastSize := countBufferListMemSize(bufferNum, capPerBuffer)
 	if len(mem) < int(offsetInMem+atLeastSize) || offsetInMem > uint32(len(mem)) || atLeastSize > uint32(len(mem)) {
@@ -411,7 +411,7 @@ func mappingFreeBufferList(mem []byte, offset uint32) (*bufferList, error) {
 	}
 	needSize := countBufferListMemSize(*b.cap, *b.capPerBuffer)
 	if offset+needSize > uint32(len(mem)) || (offset+needSize) < (offset+bufferListHeaderSize) {
-		return nil, fmt.Errorf("mappingFreeBufferList failed, size:%d cap:%d head:%d tail:%d capPerBufer:%d err: mem's size is at least %d but:%d",
+		return nil, fmt.Errorf("mappingFreeBufferList failed, size:%d cap:%d head:%d tail:%d capPerBuffer:%d err: mem's size is at least %d but:%d",
 			*b.size, *b.cap, *b.head, *b.tail, *b.capPerBuffer, needSize, len(mem))
 	}
 	b.bufferRegion = mem[offset+bufferListHeaderSize : offset+needSize]
@@ -483,7 +483,7 @@ func (b *bufferManager) remainSize() uint32 {
 	return result
 }
 
-//alloc single buffer slice , whose performance better than allocShmBuffers.
+// alloc single buffer slice , whose performance better than allocShmBuffers.
 func (b *bufferManager) allocShmBuffer(size uint32) (*bufferSlice, error) {
 	if size <= b.maxSliceSize {
 		for i := range b.lists {
@@ -563,13 +563,13 @@ func (b *bufferManager) sliceSize() (size int) {
 
 func (b *bufferManager) readBufferSlice(offset uint32) (*bufferSlice, error) {
 	if int(offset)+bufferHeaderSize >= len(b.mem) {
-		return nil, fmt.Errorf("broken share memory. readBufferSlice unexpect offset:%d buffers cap:%d",
+		return nil, fmt.Errorf("broken share memory. readBufferSlice unexpected offset:%d buffers cap:%d",
 			offset, len(b.mem))
 	}
 	bufCap := *(*uint32)(unsafe.Pointer(&b.mem[offset+bufferCapOffset]))
 	bufEndOffset := offset + uint32(bufferHeaderSize) + bufCap
 	if bufEndOffset > uint32(len(b.mem)) {
-		return nil, fmt.Errorf("broken share memory. readBufferSlice unexpect bufferEndOffset:%d. bufferStartOffset:%d buffers cap:%d",
+		return nil, fmt.Errorf("broken share memory. readBufferSlice unexpected bufferEndOffset:%d. bufferStartOffset:%d buffers cap:%d",
 			bufEndOffset, offset, len(b.mem))
 	}
 	return newBufferSlice(b.mem[offset:offset+bufferHeaderSize], b.mem[offset+bufferHeaderSize:bufEndOffset], offset, true), nil
