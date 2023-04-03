@@ -65,10 +65,10 @@ ok  	github.com/cloudwego/shmipc	42.138s
 #### 与应用集成
 
 - [使用Stream的Buffer接口进行对象的序列化与反序列化](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/idl/example.go)
-- [使用Shmipc同步接口的Client实现](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_client.go)
-- [使用Shmipc同步接口的Server实现](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_server.go)
-- [使用Shmipc异步接口的Client实现](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_async_client.go)
-- [使用Shmipc异步接口的Server实现](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_async_server.go) 
+- [使用Shmipc同步接口的Client实现](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_client/main.go)
+- [使用Shmipc同步接口的Server实现](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_server/main.go)
+- [使用Shmipc异步接口的Client实现](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_async_client/client.go)
+- [使用Shmipc异步接口的Server实现](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_async_server/server.go) 
 
 #### 热升级
 

@@ -70,10 +70,10 @@ ok  	github.com/cloudwego/shmipc	42.138s
 #### Integrate with application
 
 - [serialization and deserialization](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/idl/example.go)
-- [client which using synchronous interface](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_client.go)
-- [server which using synchronous interface](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_server.go)
-- [client which using asynchronous interface](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_async_client.go)
-- [server which using asynchronous interface](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_async_server.go)
+- [client which using synchronous interface](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_client/main.go)
+- [server which using synchronous interface](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_server/main.go)
+- [client which using asynchronous interface](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_async_client/client.go)
+- [server which using asynchronous interface](https://github.com/cloudwego/shmipc-go/blob/main/example/best_practice/shmipc_async_server/server.go)
 
 #### HotRestart
 
