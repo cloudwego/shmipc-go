@@ -45,9 +45,9 @@ type sessionManagerHotRestartParams struct {
 	session *Session
 }
 
-//SessionManager will start multi Session with the peer process.
-//when peer process was crashed or the underlying connection was closed, SessionManager could retry connect.
-//and SessionManager could cooperate with peer process to finish hot restart.
+// SessionManager will start multi Session with the peer process.
+// when peer process was crashed or the underlying connection was closed, SessionManager could retry connect.
+// and SessionManager could cooperate with peer process to finish hot restart.
 type SessionManager struct {
 	ctx        context.Context
 	cancelFunc context.CancelFunc
@@ -63,7 +63,7 @@ type SessionManager struct {
 	sync.Mutex
 }
 
-//SessionManagerConfig is the configuration of SessionManager
+// SessionManagerConfig is the configuration of SessionManager
 type SessionManagerConfig struct {
 	*Config
 	UnixPath string //Deprecated , please use Network and Address.
@@ -95,14 +95,14 @@ var (
 	smMux    sync.Mutex
 )
 
-//GlobalSessionManager return a global SessionManager. return nil if global SessionManager hadn't initialized
+// GlobalSessionManager return a global SessionManager. return nil if global SessionManager hadn't initialized
 func GlobalSessionManager() *SessionManager {
 	smMux.Lock()
 	defer smMux.Unlock()
 	return globalSM
 }
 
-//DefaultSessionManagerConfig return the default SessionManager's configuration
+// DefaultSessionManagerConfig return the default SessionManager's configuration
 func DefaultSessionManagerConfig() *SessionManagerConfig {
 	return &SessionManagerConfig{
 		Config:            DefaultConfig(),
@@ -113,7 +113,7 @@ func DefaultSessionManagerConfig() *SessionManagerConfig {
 	}
 }
 
-//InitGlobalSessionManager initializes a global SessionManager and could use in every where in process
+// InitGlobalSessionManager initializes a global SessionManager and could use in every where in process
 func InitGlobalSessionManager(config *SessionManagerConfig) (*SessionManager, error) {
 	smMux.Lock()
 	defer smMux.Unlock()
@@ -129,7 +129,7 @@ func InitGlobalSessionManager(config *SessionManagerConfig) (*SessionManager, er
 	return globalSM, nil
 }
 
-//NewSessionManager return a SessionManager with giving configuration
+// NewSessionManager return a SessionManager with giving configuration
 func NewSessionManager(config *SessionManagerConfig) (*SessionManager, error) {
 	sm := &SessionManager{
 		config: config,
@@ -157,7 +157,7 @@ func newStreamPool(poolCapacity uint32) *streamPool {
 	return &streamPool{streams: make([]*Stream, poolCapacity), capacity: poolCapacity}
 }
 
-//Close will shutdown the SessionManager's background goroutine and close all stream in stream pool
+// Close will shutdown the SessionManager's background goroutine and close all stream in stream pool
 func (sm *SessionManager) Close() error {
 	sm.cancelFunc()
 	sm.wg.Wait()
@@ -167,15 +167,15 @@ func (sm *SessionManager) Close() error {
 	return nil
 }
 
-//GetStream return a shmipc's Stream from stream pool.
-//Every stream should explicitly call PutBack() to return it to SessionManager for next time using,
-//otherwise it will cause resource leak.
+// GetStream return a shmipc's Stream from stream pool.
+// Every stream should explicitly call PutBack() to return it to SessionManager for next time using,
+// otherwise it will cause resource leak.
 func (sm *SessionManager) GetStream() (*Stream, error) {
 	i := (atomic.AddUint64(&sm.count, 1) / sessionRoundRobinThreshold) % uint64(len(sm.pools))
 	return sm.pools[i].getOrOpenStream()
 }
 
-//PutBack is used to return unused stream to stream pool for next time using.
+// PutBack is used to return unused stream to stream pool for next time using.
 func (sm *SessionManager) PutBack(stream *Stream) {
 	if stream != nil && stream.pool != nil {
 		stream.pool.putOrCloseStream(stream)
@@ -283,7 +283,7 @@ func (sm *SessionManager) checkHotRestart() {
 
 func (sm *SessionManager) handleEvent(event eventType, param interface{}) {
 	if int(event) >= len(sessionManagerHandlers) || sessionManagerHandlers[event] == nil {
-		internalLogger.errorf("SessionManager handle unsupport event %d %s", event, event.String())
+		internalLogger.errorf("SessionManager handle unsupported event %d %s", event, event.String())
 		return
 	}
 

@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"github/cloudwego/shmipc-go"
 	"net/http"
 	_ "net/http/pprof"
 	"os"

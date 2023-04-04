@@ -149,7 +149,7 @@ func handleShareMemoryByFilePath(s *Session, hdr header) error {
 	return nil
 }
 
-//todo with stream'timeout
+// todo with stream'timeout
 func handleFallbackData(s *Session, h header, buf []byte) (int, bool, error) {
 	eventLen := int(h.Length())
 	payloadLen := eventLen - headerSize
@@ -213,7 +213,7 @@ func handleShareMemoryByMemFd(s *Session, h header) error {
 		return errors.New("try recv fd from peer failed,reason:" + err.Error())
 	}
 	if oobn != len(oob) {
-		return fmt.Errorf("handleShareMemoryByMemFd faield,reason:"+
+		return fmt.Errorf("handleShareMemoryByMemFd failed,reason:"+
 			"ReadOutOfBoundForFd ,expect oobnLen:%d, but oobnLen:%d",
 			len(oob), oobn)
 	}

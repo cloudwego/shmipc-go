@@ -100,7 +100,7 @@ type sendReady struct {
 	Err  chan error
 }
 
-//Server return a shmipc server with the giveing connection and configuration
+// Server return a shmipc server with the giving connection and configuration
 func Server(conn net.Conn, conf *Config) (*Session, error) {
 	return newSession(conf, conn, false)
 }
@@ -638,9 +638,9 @@ func (s *Session) initMemManager() error {
 	)
 
 	if mmapMapType == MemMapTypeDevShmFile {
-		if bm, err = getGlobalBufferManager(s.config.ShareMemoryPathPrefix+buferPathSuffix,
+		if bm, err = getGlobalBufferManager(s.config.ShareMemoryPathPrefix+bufferPathSuffix,
 			s.config.ShareMemoryBufferCap, true, s.config.BufferSliceSizes); err != nil {
-			os.Remove(s.config.ShareMemoryPathPrefix + buferPathSuffix)
+			os.Remove(s.config.ShareMemoryPathPrefix + bufferPathSuffix)
 			return fmt.Errorf("create share memory buffer manager failed ,error=%w", err)
 		}
 		if qm, err = createQueueManager(s.config.QueuePath, s.config.QueueCap); err != nil {
@@ -648,7 +648,7 @@ func (s *Session) initMemManager() error {
 			return fmt.Errorf("create share memory queue manager failed ,error=%w", err)
 		}
 	} else {
-		if bm, err = getGlobalBufferManagerWithMemFd(s.config.ShareMemoryPathPrefix+buferPathSuffix,
+		if bm, err = getGlobalBufferManagerWithMemFd(s.config.ShareMemoryPathPrefix+bufferPathSuffix,
 			0, s.config.ShareMemoryBufferCap, true, s.config.BufferSliceSizes); err != nil {
 			return fmt.Errorf("create share memory buffer manager failed ,error=%w", err)
 		}
@@ -700,7 +700,7 @@ func (s *Session) hotRestart(epoch uint64, event eventType) error {
 	return nil
 }
 
-//GetMetrics return the session's metrics for monitoring
+// GetMetrics return the session's metrics for monitoring
 func (s *Session) GetMetrics() (PerformanceMetrics, StabilityMetrics, ShareMemoryMetrics) {
 	s.streamLock.Lock()
 	activeStreamCount := uint64(len(s.streams))
@@ -745,8 +745,8 @@ func (s *Session) GetMetrics() (PerformanceMetrics, StabilityMetrics, ShareMemor
 		}, smm
 }
 
-//IsClient return the session whether is a client
+// IsClient return the session whether is a client
 func (s *Session) IsClient() bool { return s.isClient }
 
-//ID return the a string to identify unique shmipc session in a process
+// ID return the a string to identify unique shmipc session in a process
 func (s *Session) ID() string { return s.name + "_" + strconv.Itoa(s.sessionID) }

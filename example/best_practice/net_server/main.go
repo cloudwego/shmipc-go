@@ -28,7 +28,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cloudwego/shmipc/example/best_practice/idl"
+	"github.com/cloudwego/shmipc-go/example/best_practice/idl"
 )
 
 var count uint64
@@ -97,7 +97,7 @@ func main() {
 	}
 	defer ln.Close()
 
-	// 2. accept a unix doamin socket
+	// 2. accept a unix domain socket
 	for {
 		conn, err := ln.Accept()
 		if err != nil {

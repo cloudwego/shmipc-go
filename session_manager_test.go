@@ -52,7 +52,7 @@ func newClientServerByNewClientSession(*SessionManagerConfig) (*Session, *Sessio
 
 	ln, err := net.ListenUnix("unix", &net.UnixAddr{Name: conf.Address, Net: "unix"})
 	if err != nil {
-		panic("Listen uds faild, " + err.Error())
+		panic("Listen uds failed, " + err.Error())
 	}
 	defer ln.Close()
 
@@ -235,8 +235,8 @@ func TestSM_NewClientSession(t *testing.T) {
 	<-done
 }
 
-func TestSM_Backgroud(t *testing.T) {
-	fmt.Println("----------test session manager backgroud----------")
+func TestSM_Background(t *testing.T) {
+	fmt.Println("----------test session manager background----------")
 	config := testSessionMgrConf()
 	config.Config.rebuildInterval = time.Second * 10
 	config.SessionNum = 1
@@ -309,7 +309,7 @@ func TestSM_GlobalCreation(t *testing.T) {
 	fmt.Println("----------test session manager global creation----------")
 	config := testSessionMgrConf()
 	// we need not create really connection here
-	// this work have been done in backgroud test
+	// this work have been done in background test
 	config.SessionNum = 0
 	gsm, _ := InitGlobalSessionManager(config)
 	gsm2 := GlobalSessionManager()

@@ -96,8 +96,8 @@ func testClientServerConfig(conf *Config) (*Session, *Session) {
 		}
 		close(ok)
 	}()
-	clienConf := *conf
-	client, cErr := newSession(&clienConf, clientConn, true)
+	clientConf := *conf
+	client, cErr := newSession(&clientConf, clientConn, true)
 	if cErr != nil {
 		panic(cErr)
 	}
@@ -187,7 +187,7 @@ func TestSession_AcceptStreamNormally(t *testing.T) {
 	fmt.Println("----------test session accept stream normally done----------")
 }
 
-func TestSession_AcceptStreamWhenSesssionClosed(t *testing.T) {
+func TestSession_AcceptStreamWhenSessionClosed(t *testing.T) {
 	fmt.Println("----------test session accept stream when session closed----------")
 	client, server := testClientServer()
 	defer client.Close()

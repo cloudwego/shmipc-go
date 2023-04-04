@@ -29,7 +29,7 @@ import (
 	"time"
 
 	"github.com/cloudwego/shmipc-go"
-	"github.com/cloudwego/shmipc/example/best_practice/idl"
+	"github.com/cloudwego/shmipc-go/example/best_practice/idl"
 )
 
 var count uint64
