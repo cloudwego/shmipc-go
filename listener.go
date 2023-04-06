@@ -209,11 +209,7 @@ func (l *Listener) IsHotRestartDone() bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	if l.state != hotRestartState {
-		return true
-	}
-
-	return false
+	return l.state != hotRestartState
 }
 
 //SetUnlinkOnClose sets whether unlink unix socket path when Listener was stopped

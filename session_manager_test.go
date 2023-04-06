@@ -67,7 +67,8 @@ func newClientServerByNewClientSession(*SessionManagerConfig) (*Session, *Sessio
 			panic(err)
 		}
 		// ensure mmap done
-		for !server.handshakeDone {
+		for !server.handshakeDone { //lint:ignore SA5002
+			time.Sleep(time.Millisecond * 100)
 		}
 		close(done)
 	}()
@@ -112,7 +113,7 @@ func TestStreamPool_Put(t *testing.T) {
 	assert.Equal(t, id, stream.id)
 	// add some bytes to recvbuf making reset failure
 	stream.recvBuf = newEmptyLinkedBuffer(stream.session.bufferManager)
-	stream.recvBuf.WriteString("test")
+	_ = stream.recvBuf.WriteString("test")
 	sp.putOrCloseStream(stream)
 	// reset fail, make it closed
 	assert.Equal(t, uint32(streamClosed), stream.state)
@@ -269,7 +270,8 @@ func TestSM_Background(t *testing.T) {
 				t.Fatalf("Server error:%s", err.Error())
 			}
 			// ensure mmap done
-			for !server.handshakeDone {
+			for !server.handshakeDone { //lint:ignore SA5002
+				time.Sleep(100 * time.Millisecond)
 			}
 			servers[i] = server
 			wg.Done()
@@ -350,7 +352,8 @@ func TestSM_GetAndPutStream(t *testing.T) {
 				t.Fatalf("Server error:%s", err.Error())
 			}
 			// ensure mmap done
-			for !server.handshakeDone {
+			for !server.handshakeDone { //lint:ignore SA5002
+				time.Sleep(time.Millisecond * 100)
 			}
 			servers[i] = server
 			wg.Done()

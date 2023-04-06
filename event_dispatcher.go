@@ -54,7 +54,10 @@ var (
 func ensureDefaultDispatcherInit() {
 	if defaultDispatcher != nil {
 		dispatcherInitOnce.Do(func() {
-			defaultDispatcher.runLoop()
+			err := defaultDispatcher.runLoop()
+			if err != nil {
+				panic("shmipc run diapcher failed, reason:" + err.Error())
+			}
 		})
 	}
 }

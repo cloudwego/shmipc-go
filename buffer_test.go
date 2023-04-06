@@ -89,7 +89,7 @@ func TestLinkedBuffer_ReleasePreviousRead(t *testing.T) {
 		assert.Equal(t, nil, err)
 	}
 	assert.Equal(t, (sliceNum/2)-1, buf.pinnedList.size())
-	buf.Discard(buf.Len())
+	_, _ = buf.Discard(buf.Len())
 
 	buf.releasePreviousReadAndReserve()
 	assert.Equal(t, 0, buf.pinnedList.size())
@@ -221,7 +221,7 @@ func TestLinkedBuffer_Done(t *testing.T) {
 	assert.Equal(t, 3, buffer.sliceList.size())
 
 	// write data to full 2 slice, remove one
-	buffer.WriteBytes(mockData)
+	_, _ = buffer.WriteBytes(mockData)
 	reader := buffer.done(true)
 	assert.Equal(t, 2, buffer.sliceList.size())
 	getBytes, _ := reader.ReadBytes(mockDataSize)
@@ -253,7 +253,7 @@ func testLinkedBufferReadBytes(t *testing.T, createBufferWriter func() *linkedBu
 				oneReadSize = buf.Len()
 			}
 			//do nothing
-			buf.Peek(oneReadSize)
+			_, _ = buf.Peek(oneReadSize)
 
 			readData, err := buf.ReadBytes(oneReadSize)
 			assert.Equal(t, true, err == nil, err)
@@ -265,8 +265,8 @@ func testLinkedBufferReadBytes(t *testing.T, createBufferWriter func() *linkedBu
 			read += oneReadSize
 		}
 		assert.Equal(t, 1<<21, read)
-		buf.ReadBytes(-10)
-		buf.ReadBytes(0)
+		_, _ = buf.ReadBytes(-10)
+		_, _ = buf.ReadBytes(0)
 		buf.ReleasePreviousRead()
 	}
 

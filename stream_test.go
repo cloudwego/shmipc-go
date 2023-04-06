@@ -87,13 +87,13 @@ func TestStream_Close(t *testing.T) {
 
 	buf := s.BufferWriter()
 
-	buf.WriteByte(1)
+	_ = buf.WriteByte(1)
 	err = s.Flush(false)
 	if err != nil {
 		t.Fatalf("stream write buf failed:,err:%s", err.Error())
 	}
 	s.Close()
-	buf.WriteString("1")
+	_ = buf.WriteString("1")
 	// try to write after stream closed
 	err = s.Flush(false)
 	assert.Equal(t, ErrStreamClosed, err)
@@ -265,7 +265,7 @@ func TestStream_HalfClose(t *testing.T) {
 		buf.ReleasePreviousRead()
 		println("smalloc", i)
 		wbuf := stream.BufferWriter()
-		wbuf.WriteBytes(sbuf)
+		_, _ = wbuf.WriteBytes(sbuf)
 		err = stream.Flush(true)
 		if err != nil {
 			t.Fatalf("err: %v", err)
@@ -288,7 +288,7 @@ func TestStream_HalfClose(t *testing.T) {
 			t.Fatalf("err: %v", err)
 			return
 		}
-		buf.WriteBytes(sbuf)
+		_, _ = buf.WriteBytes(sbuf)
 		err = stream.Flush(true)
 		if err != nil {
 			t.Fatalf("err: %v", err)
@@ -382,7 +382,7 @@ func TestStream_SendQueueFullTimeout(t *testing.T) {
 
 	s, err := client.OpenStream()
 	// if send queue is full, it will trigger timeout immediately
-	s.SetWriteDeadline(time.Now())
+	_ = s.SetWriteDeadline(time.Now())
 	if err != nil {
 		t.Fatalf("client.OpenStream failed:%s", err.Error())
 	}

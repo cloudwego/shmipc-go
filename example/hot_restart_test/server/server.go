@@ -89,7 +89,7 @@ func Init() {
 	}
 
 	go func() {
-		http.ListenAndServe(fmt.Sprintf(":%d", debugPort), nil)
+		http.ListenAndServe(fmt.Sprintf(":%d", debugPort), nil)//nolint:errcheck
 	}()
 }
 
@@ -214,7 +214,7 @@ func rebuildListener(fd int) (net.Listener, error) {
 }
 
 func start() {
-	syscall.Unlink(udsPath)
+	_ = syscall.Unlink(udsPath)
 	syscall.Unlink(adminPath)
 	fmt.Printf("server normal start\n")
 

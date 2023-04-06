@@ -109,14 +109,6 @@ func newEmptyLinkedBuffer(manager *bufferManager) *linkedBuffer {
 	return l
 }
 
-func (l *linkedBuffer) cap() int {
-	sum := uint32(0)
-	for e := l.sliceList.front(); e != nil; e = e.next() {
-		sum += uint32(e.capacity())
-	}
-	return int(sum)
-}
-
 func (l *linkedBuffer) Len() int {
 	return l.len
 }

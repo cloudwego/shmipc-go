@@ -38,11 +38,13 @@ func testConn() (*net.UnixConn, *net.UnixConn) {
 
 func testUdsConn() (client *net.UnixConn, server *net.UnixConn) {
 	udsPath := "shmipc_unit_test" + strconv.Itoa(int(rand.Int63())) + "_" + strconv.Itoa(time.Now().Nanosecond())
-	syscall.Unlink(udsPath)
+	_ = syscall.Unlink(udsPath)
 	addr := &net.UnixAddr{udsPath, "unix"}
 	notifyCh := make(chan struct{})
 	go func() {
-		defer syscall.Unlink(udsPath)
+		defer func() {
+			_ = syscall.Unlink(udsPath)
+		}()
 		ln, err := net.ListenUnix("unix", addr)
 		if err != nil {
 			panic("create listener failed:" + err.Error())
@@ -155,7 +157,7 @@ func TestSession_AcceptStreamNormally(t *testing.T) {
 		// only when we actually send something, the server can
 		// aware that a new stream created, therefore we need to
 		// send a byte to notify server
-		cStream.BufferWriter().WriteString("1")
+		_ = cStream.BufferWriter().WriteString("1")
 		cStream.Flush(true)
 		// wait resp
 		<-notifyRead
@@ -180,7 +182,7 @@ func TestSession_AcceptStreamNormally(t *testing.T) {
 	assert.Equal(t, "1", string(respData))
 
 	// write back
-	sStream.BufferWriter().WriteString("1")
+	_ = sStream.BufferWriter().WriteString("1")
 	sStream.Flush(true)
 	close(notifyRead)
 	<-done
@@ -204,12 +206,12 @@ func TestSession_AcceptStreamWhenSessionClosed(t *testing.T) {
 	}()
 
 	cStream2, err := client.OpenStream()
-	defer cStream2.Close()
+	defer cStream2.Close() //lint:ignore SA5001
 
 	if err != nil {
 		t.Fatalf("Failed to malloc buf:%s", err.Error())
 	}
-	cStream2.BufferWriter().WriteString("1")
+	_ = cStream2.BufferWriter().WriteString("1")
 	cStream2.Flush(true)
 
 	// now shutdown session
@@ -343,7 +345,7 @@ func TestSendData_Large(t *testing.T) {
 		}
 
 		for i := 0; i < sendSize/recvSize; i++ {
-			stream.BufferWriter().WriteBytes(data)
+			_, _ = stream.BufferWriter().WriteBytes(data)
 			err = stream.Flush(true)
 			if err != nil {
 				t.Logf("err: %v", err)

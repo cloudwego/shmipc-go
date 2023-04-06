@@ -183,15 +183,15 @@ func (l *logger) trace(v interface{}) {
 func (l *logger) prefix(level int) string {
 	var buffer [64]byte
 	buf := bytes.NewBuffer(buffer[:0])
-	buf.WriteString(colors[level])
-	buf.WriteString(levelName[level])
-	buf.WriteByte(' ')
-	buf.WriteString(time.Now().Format("2006-01-02 15:04:05.999999"))
-	buf.WriteByte(' ')
-	buf.WriteString(l.location())
-	buf.WriteByte(' ')
-	buf.WriteString(l.name)
-	buf.WriteByte(' ')
+	_, _ = buf.WriteString(colors[level])
+	_, _ = buf.WriteString(levelName[level])
+	_ = buf.WriteByte(' ')
+	_, _ = buf.WriteString(time.Now().Format("2006-01-02 15:04:05.999999"))
+	_ = buf.WriteByte(' ')
+	_, _ = buf.WriteString(l.location())
+	_ = buf.WriteByte(' ')
+	_, _ = buf.WriteString(l.name)
+	_ = buf.WriteByte(' ')
 	return buf.String()
 }
 

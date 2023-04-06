@@ -35,7 +35,7 @@ func main() {
 	}
 	udsPath := filepath.Join(dir, "../ipc_test.sock")
 
-	syscall.Unlink(udsPath)
+	_ = syscall.Unlink(udsPath)
 	ln, err := net.ListenUnix("unix", &net.UnixAddr{Name: udsPath, Net: "unix"})
 	if err != nil {
 		panic(err)
