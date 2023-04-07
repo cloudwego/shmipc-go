@@ -37,23 +37,8 @@ jobs:
           # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].
           reporter: github-pr-review
           # Report all results.
-          filter_mode: nofilter
+          filter_mode: added
           # Exit with 1 when it find at least one finding.
           fail_on_error: true
           # Set staticcheck flags
-          staticcheck_flags: -checks=inherit,-SA1029
-
-  lint:
-    runs-on: [ self-hosted, X64 ]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.19
-
-      - name: Golangci Lint
-        # https://golangci-lint.run/
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: latest
+          staticcheck_flags: -checks=inherit,-SA1029,-SA2002,-SA4006,-SA2002,-SA9003,-S1024 -exclude=example

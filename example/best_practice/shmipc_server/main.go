@@ -76,7 +76,7 @@ func init() {
 		}
 	}()
 	go func() {
-		http.ListenAndServe(":20000", nil)
+		http.ListenAndServe(":20000", nil)//nolint:errcheck
 	}()
 	runtime.GOMAXPROCS(1)
 }
@@ -89,7 +89,7 @@ func main() {
 	}
 	udsPath := filepath.Join(dir, "../ipc_test.sock")
 
-	syscall.Unlink(udsPath)
+	_ = syscall.Unlink(udsPath)
 	ln, err := net.ListenUnix("unix", &net.UnixAddr{Name: udsPath, Net: "unix"})
 	if err != nil {
 		panic(err)

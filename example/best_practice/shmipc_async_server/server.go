@@ -102,7 +102,7 @@ func init() {
 	runtime.GOMAXPROCS(1)
 
 	go func() {
-		http.ListenAndServe(":20000", nil)
+		http.ListenAndServe(":20000", nil)//nolint:errcheck
 	}()
 }
 
@@ -114,7 +114,7 @@ func main() {
 	}
 	udsPath := filepath.Join(dir, "../ipc_test.sock")
 
-	syscall.Unlink(udsPath)
+	_ = syscall.Unlink(udsPath)
 	config := shmipc.NewDefaultListenerConfig(udsPath, "unix")
 	ln, err := shmipc.NewListener(&listenCbImpl{}, config)
 	if err != nil {

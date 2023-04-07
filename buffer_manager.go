@@ -78,7 +78,6 @@ type globalBufferManager struct {
 // bufferList's layout in share memory: size 4 byte | cap 4 byte | head 4 byte | tail 4 byte | capPerBuffer 4 byte | bufferRegion n bye
 // thead safe, lock free. support push && pop concurrently even cross different process.
 type bufferList struct {
-	base uintptr
 	// the number of free buffer
 	size *int32
 	//the max size of list
@@ -170,7 +169,7 @@ func getGlobalBufferManagerWithMemFd(bufferPathName string, memFd int, capacity 
 	}
 
 	if err != nil {
-		syscall.Munmap(mem)
+		_ = syscall.Munmap(mem)
 		return nil, err
 	}
 
@@ -239,7 +238,7 @@ func getGlobalBufferManager(shmPath string, capacity uint32, create bool, pairs 
 	}
 
 	if err != nil {
-		syscall.Munmap(mem)
+		_ = syscall.Munmap(mem)
 		return nil, err
 	}
 	bufferManagers.bms[shmPath] = bm

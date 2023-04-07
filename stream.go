@@ -493,7 +493,6 @@ func (r *pendingData) moveToWithoutLock(toBuf *linkedBuffer) {
 	}
 	atomic.AddUint64(&r.stream.session.stats.inFlowBytes, uint64(toBuf.Len()-preLen))
 	r.unread = r.unread[:0]
-	return
 }
 
 func (r *pendingData) moveTo(toBuf *linkedBuffer) {
@@ -526,7 +525,6 @@ func (r *pendingData) clear() {
 		r.unread = r.unread[:0]
 	}
 	r.Unlock()
-	return
 }
 
 func (s *Stream) setCallbacks(sc StreamCallbacks) {

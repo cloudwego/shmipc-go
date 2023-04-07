@@ -63,7 +63,7 @@ func (s streamCbImpl) OnData(reader BufferReader) {
 
 	if ret == firstMsg {
 		fmt.Println("old server recv msg")
-		s.stream.BufferWriter().WriteString(ret)
+		_ = s.stream.BufferWriter().WriteString(ret)
 		s.stream.Flush(false)
 		s.stream.ReleaseReadAndReuse()
 
@@ -72,7 +72,7 @@ func (s streamCbImpl) OnData(reader BufferReader) {
 
 	if ret == secondMsg {
 		fmt.Println("new server recv msg")
-		s.stream.BufferWriter().WriteString(ret)
+		_ = s.stream.BufferWriter().WriteString(ret)
 		s.stream.Flush(false)
 		s.stream.ReleaseReadAndReuse()
 

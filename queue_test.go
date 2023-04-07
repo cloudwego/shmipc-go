@@ -91,7 +91,7 @@ func TestQueueOperate(t *testing.T) {
 	q.markNotWorking()
 	assert.Equal(t, false, q.consumerIsWorking(), "consumer should be not working")
 
-	q.put(queueElement{1, 1, 1})
+	_ = q.put(queueElement{1, 1, 1})
 	q.markNotWorking()
 	assert.Equal(t, true, q.consumerIsWorking(), "consumer should be working")
 }
@@ -131,14 +131,14 @@ func BenchmarkQueuePut(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		q.put(queueElement{seqID: uint32(i), offsetInShmBuf: uint32(i)})
+		_ = q.put(queueElement{seqID: uint32(i), offsetInShmBuf: uint32(i)})
 	}
 }
 
 func BenchmarkQueuePop(b *testing.B) {
 	q := createQueue(uint32(b.N))
 	for i := 0; i < b.N; i++ {
-		q.put(queueElement{seqID: uint32(i), offsetInShmBuf: uint32(i)})
+		_ = q.put(queueElement{seqID: uint32(i), offsetInShmBuf: uint32(i)})
 	}
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -156,7 +156,7 @@ func BenchmarkQueueMultiPut(b *testing.B) {
 		c := 0
 		for pb.Next() {
 			c++
-			q.put(queueElement{seqID: uint32(c), offsetInShmBuf: uint32(c)})
+			_ = q.put(queueElement{seqID: uint32(c), offsetInShmBuf: uint32(c)})
 
 		}
 	})
@@ -168,7 +168,7 @@ func BenchmarkQueueMultiPop(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		q.put(queueElement{seqID: uint32(i), offsetInShmBuf: uint32(i)})
+		_ = q.put(queueElement{seqID: uint32(i), offsetInShmBuf: uint32(i)})
 	}
 	b.RunParallel(func(pb *testing.PB) {
 

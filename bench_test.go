@@ -32,7 +32,7 @@ import (
 func init() {
 	SetLogLevel(levelNoPrint)
 	go func() {
-		fmt.Println(http.ListenAndServe("0.0.0.0:29998", nil))
+		fmt.Println(http.ListenAndServe("0.0.0.0:29998", nil)) //nolint:errcheck
 	}()
 }
 

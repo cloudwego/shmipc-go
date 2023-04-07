@@ -44,7 +44,7 @@ func init() {
 		}
 	}()
 	go func() {
-		http.ListenAndServe(":20001", nil)
+		http.ListenAndServe(":20001", nil) //nolint:errcheck
 	}()
 	runtime.GOMAXPROCS(1)
 }
