@@ -64,8 +64,8 @@ ok  	github.com/cloudwego/shmipc	42.138s
 
 #### HelloWorld
 
-- [HelloWorldClient](https://github.com/cloudwego/shmipc-go/blob/main/example/helloword/greeter_client/main.go)
-- [HelloWorldServer](https://github.com/cloudwego/shmipc-go/blob/main/example/helloword/greeter_server/main.go)
+- [HelloWorldClient](https://github.com/cloudwego/shmipc-go/blob/main/example/helloworld/greeter_client/main.go)
+- [HelloWorldServer](https://github.com/cloudwego/shmipc-go/blob/main/example/helloworld/greeter_server/main.go)
 
 #### Integrate with application
 
