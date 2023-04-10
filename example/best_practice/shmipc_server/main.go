@@ -38,18 +38,18 @@ func handleStream(s *shmipc.Stream) {
 	req := &idl.Request{}
 	resp := &idl.Response{}
 	for {
-		//1.deserialize Request
+		// 1. deserialize Request
 		if err := req.ReadFromShm(s.BufferReader()); err != nil {
 			fmt.Println("stream read request, err=" + err.Error())
 			return
 		}
 
 		{
-			//2.handle request
+			// 2. handle request
 			atomic.AddUint64(&count, 1)
 		}
 
-		//3.serialize Response
+		// 3.serialize Response
 		resp.ID = req.ID
 		resp.Name = req.Name
 		resp.Image = req.Key
@@ -76,19 +76,19 @@ func init() {
 		}
 	}()
 	go func() {
-		http.ListenAndServe(":20000", nil)//nolint:errcheck
+		http.ListenAndServe(":20000", nil) //nolint:errcheck
 	}()
 	runtime.GOMAXPROCS(1)
 }
 
 func main() {
-	// 1. listen unix domain socket
 	dir, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
 	udsPath := filepath.Join(dir, "../ipc_test.sock")
 
+	// 1. listen unix domain socket
 	_ = syscall.Unlink(udsPath)
 	ln, err := net.ListenUnix("unix", &net.UnixAddr{Name: udsPath, Net: "unix"})
 	if err != nil {
@@ -125,6 +125,4 @@ func main() {
 			}
 		}()
 	}
-
-	fmt.Println("shmipc server exited")
 }
