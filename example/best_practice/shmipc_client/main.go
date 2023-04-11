@@ -88,16 +88,15 @@ func main() {
 			for range time.Tick(time.Second) {
 				// 3. get stream from SessionManager
 				stream, err := smgr.GetStream()
-				for k := 0; k < n; k++ {
-					now := time.Now()
-					if err != nil {
-						fmt.Println("get stream error:" + err.Error())
-						continue
-					}
+				if err != nil {
+					fmt.Println("get stream error:" + err.Error())
+					continue
+				}
 
+				for k := 0; k < n; k++ {
 					// 4. set request object
 					req.Reset()
-					req.ID = uint64(now.UnixNano())
+					req.ID = uint64(time.Now().UnixNano())
 					req.Name = "xxx"
 					req.Key = randContent
 
@@ -120,10 +119,7 @@ func main() {
 						continue
 					}
 
-					{
-						//handle response...
-						atomic.AddUint64(&count, 1)
-					}
+					atomic.AddUint64(&count, 1)
 				}
 			}
 		}()
