@@ -43,11 +43,11 @@ func init() {
 			lastCount = curCount
 		}
 	}()
+
 	go func() {
-		go func() {
-			http.ListenAndServe(":20001", nil) //nolint:errcheck
-		}()
+		http.ListenAndServe(":20001", nil) //nolint:errcheck
 	}()
+
 	runtime.GOMAXPROCS(1)
 }
 
