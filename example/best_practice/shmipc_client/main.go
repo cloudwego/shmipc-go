@@ -43,11 +43,11 @@ func init() {
 			lastCount = curCount
 		}
 	}()
+
 	go func() {
-		go func() {
-			http.ListenAndServe(":20001", nil)//nolint:errcheck
-		}()
+		http.ListenAndServe(":20001", nil) //nolint:errcheck
 	}()
+
 	runtime.GOMAXPROCS(1)
 }
 
@@ -58,7 +58,7 @@ func main() {
 	randContent := make([]byte, *packageSize)
 	rand.Read(randContent)
 
-	// 1. dial unix domain socket
+	// 1. get current directory
 	dir, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -84,39 +84,42 @@ func main() {
 			req := &idl.Request{}
 			resp := &idl.Response{}
 			n := qps / concurrency
+
 			for range time.Tick(time.Second) {
+				// 3. get stream from SessionManager
 				stream, err := smgr.GetStream()
+				if err != nil {
+					fmt.Println("get stream error:" + err.Error())
+					continue
+				}
+
 				for k := 0; k < n; k++ {
-					now := time.Now()
-					if err != nil {
-						fmt.Println("get stream error:" + err.Error())
-						continue
-					}
-					//serialize request
+					// 4. set request object
 					req.Reset()
-					req.ID = uint64(now.UnixNano())
+					req.ID = uint64(time.Now().UnixNano())
 					req.Name = "xxx"
 					req.Key = randContent
+
+					// 5. write req to buffer of stream
 					if err := req.WriteToShm(stream.BufferWriter()); err != nil {
 						fmt.Println("write request to share memory failed, err=" + err.Error())
 						return
 					}
+
+					// 6. flush the buffered data of stream to peer
 					if err := stream.Flush(false); err != nil {
 						fmt.Println(" flush request to peer failed, err=" + err.Error())
 						return
 					}
 
-					//wait and read response
+					// 7. wait and read response
 					resp.Reset()
 					if err := resp.ReadFromShm(stream.BufferReader()); err != nil {
 						fmt.Println("write request to share memory failed, err=" + err.Error())
 						continue
 					}
 
-					{
-						//handle response...
-						atomic.AddUint64(&count, 1)
-					}
+					atomic.AddUint64(&count, 1)
 				}
 			}
 		}()
