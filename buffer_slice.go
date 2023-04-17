@@ -32,7 +32,7 @@ var (
 type bufferHeader []byte
 
 type bufferSlice struct {
-	//bufferHeader layout: cap 4 byte | size 4 byte | start 4 byte | next 4 byte | flag 2 byte
+	//bufferHeader layout: cap 4 byte | size 4 byte | start 4 byte | next 4 byte | flag 4 byte
 	bufferHeader
 	data []byte
 	cap  uint32
@@ -54,6 +54,7 @@ func newBufferSlice(header []byte, data []byte, offsetInShm uint32, isFromShm bo
 	if isFromShm && header != nil {
 		s.cap = *(*uint32)(unsafe.Pointer(&header[bufferCapOffset]))
 		s.start = *(*uint32)(unsafe.Pointer(&header[bufferDataStartOffset]))
+		s.readIndex = int(s.start)
 		s.writeIndex = int(s.start + *(*uint32)(unsafe.Pointer(&(header[bufferSizeOffset]))))
 	} else {
 		s.cap = uint32(cap(data))
