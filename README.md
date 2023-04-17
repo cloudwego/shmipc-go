@@ -5,9 +5,9 @@ English | [中文](README_CN.md)
 
 ## Introduction
 
-Shmipc is a high performance inter-process communication library developed by ByteDance,
-which was built on Linux's share memory technology, and using unix or tcp connection to do process synchronization, and finally implementing zero copy communication cross inter-processes.
-In IO-intensive and large-package scenarios, it has a better performance.
+Shmipc is a high performance inter-process communication library developed by ByteDance.
+It is built on Linux's shared memory technology and uses unix or tcp connection to do process synchronization and finally implements zero copy communication across inter-processes. 
+In IO-intensive or large-package scenarios, it has better performance.
 
 ## Features
 
