@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	//cap 4 + size 4 + start 4 + next 4 + flag 1
+	//cap 4 + size 4 + start 4 + next 4 + flag 4
 	bufferHeaderSize      = 4 + 4 + 4 + 4 + 4
 	bufferCapOffset       = 0
 	bufferSizeOffset      = bufferCapOffset + 4
