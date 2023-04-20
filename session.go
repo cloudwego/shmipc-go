@@ -52,7 +52,7 @@ type Session struct {
 	eventConn eventConn
 	// streams maps a stream id to a stream  protected by streamLock.
 	streams    map[uint32]*Stream
-	streamLock sync.Mutex
+	streamLock sync.RWMutex
 
 	// acceptCh is used to pass ready streams to the client
 	acceptCh chan *Stream
@@ -234,11 +234,11 @@ func (s *Session) CloseChan() <-chan struct{} {
 	return s.shutdownCh
 }
 
-// ActiveStreams returns the number of currently open streams
-func (s *Session) ActiveStreams() int {
-	s.streamLock.Lock()
+// GetActiveStreamCount returns the number of currently open streams
+func (s *Session) GetActiveStreamCount() int {
+	s.streamLock.RLock()
 	num := len(s.streams)
-	s.streamLock.Unlock()
+	s.streamLock.RUnlock()
 	return num
 }
 
@@ -578,6 +578,13 @@ func (s *Session) getStream(id uint32, state streamState) (stream *Stream) {
 
 }
 
+func (s *Session) getStreamById(id uint32) *Stream {
+	s.streamLock.RLock()
+	stream := s.streams[id]
+	s.streamLock.RUnlock()
+	return stream
+}
+
 // handleStreamMessage handles either a data frame
 func (s *Session) handleStreamMessage(stream *Stream, wrapper bufferSliceWrapper, state streamState) error {
 
@@ -702,9 +709,7 @@ func (s *Session) hotRestart(epoch uint64, event eventType) error {
 
 // GetMetrics return the session's metrics for monitoring
 func (s *Session) GetMetrics() (PerformanceMetrics, StabilityMetrics, ShareMemoryMetrics) {
-	s.streamLock.Lock()
-	activeStreamCount := uint64(len(s.streams))
-	s.streamLock.Unlock()
+	activeStreamCount := uint64(s.GetActiveStreamCount())
 
 	//session will close shutdownCH when it  was stopping. and monitorLoop will wake up and flush metrics.
 	//if queueManager do unmap at the moment, there will be panic.

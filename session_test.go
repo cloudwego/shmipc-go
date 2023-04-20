@@ -237,8 +237,8 @@ func TestSendData_Small(t *testing.T) {
 			t.Logf("err: %v", err)
 		}
 
-		if server.ActiveStreams() != 1 {
-			t.Fatal("num of streams is ", server.ActiveStreams())
+		if server.GetActiveStreamCount() != 1 {
+			t.Fatal("num of streams is ", server.GetActiveStreamCount())
 		}
 
 		size := 0
@@ -265,7 +265,7 @@ func TestSendData_Small(t *testing.T) {
 			t.Logf("err: %v", err)
 		}
 
-		if client.ActiveStreams() != 1 {
+		if client.GetActiveStreamCount() != 1 {
 			t.Logf("bad")
 		}
 
@@ -296,10 +296,10 @@ func TestSendData_Small(t *testing.T) {
 		panic("timeout")
 	}
 
-	if client.ActiveStreams() != 0 {
-		t.Fatalf("bad, streams:%d", client.ActiveStreams())
+	if client.GetActiveStreamCount() != 0 {
+		t.Fatalf("bad, streams:%d", client.GetActiveStreamCount())
 	}
-	if server.ActiveStreams() != 0 {
+	if server.GetActiveStreamCount() != 0 {
 		t.Fatalf("bad")
 	}
 }
@@ -449,8 +449,8 @@ func TestSendData_Small_Memfd(t *testing.T) {
 			t.Logf("err: %v", err)
 		}
 
-		if server.ActiveStreams() != 1 {
-			t.Fatal("num of streams is ", server.ActiveStreams())
+		if server.GetActiveStreamCount() != 1 {
+			t.Fatal("num of streams is ", server.GetActiveStreamCount())
 		}
 
 		size := 0
@@ -477,7 +477,7 @@ func TestSendData_Small_Memfd(t *testing.T) {
 			t.Logf("err: %v", err)
 		}
 
-		if client.ActiveStreams() != 1 {
+		if client.GetActiveStreamCount() != 1 {
 			t.Logf("bad")
 		}
 
@@ -508,10 +508,10 @@ func TestSendData_Small_Memfd(t *testing.T) {
 		panic("timeout")
 	}
 
-	if client.ActiveStreams() != 0 {
-		t.Fatalf("bad, streams:%d", client.ActiveStreams())
+	if client.GetActiveStreamCount() != 0 {
+		t.Fatalf("bad, streams:%d", client.GetActiveStreamCount())
 	}
-	if server.ActiveStreams() != 0 {
+	if server.GetActiveStreamCount() != 0 {
 		t.Fatalf("bad")
 	}
 }

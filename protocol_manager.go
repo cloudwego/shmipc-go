@@ -327,10 +327,7 @@ func handleStreamClose(s *Session, hdr header, buf []byte) (int, bool, error) {
 	id := binary.BigEndian.Uint32(buf[:4])
 	s.logger.debugf("receive peer stream[%d] goaway.", id)
 
-	s.streamLock.Lock()
-	stream := s.streams[id]
-	s.streamLock.Unlock()
-
+	stream := s.getStreamById(id)
 	if stream == nil {
 		s.logger.warnf("missing stream: %d", id)
 		return headerSize + idLen, false, nil

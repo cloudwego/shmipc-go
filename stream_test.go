@@ -51,7 +51,7 @@ func newClientServerWithNoCheck(conf *Config) (client *Session, server *Session)
 	return client, server
 }
 
-//Close                           94.4%
+// Close                           94.4%
 func TestStream_Close(t *testing.T) {
 	c := testConf()
 	c.QueueCap = 1
@@ -72,10 +72,10 @@ func TestStream_Close(t *testing.T) {
 		<-hadForceCloseNotifyCh
 		_, err = s.BufferReader().ReadByte()
 		assert.Equal(t, ErrEndOfStream, err)
-		assert.Equal(t, 1, server.ActiveStreams())
+		assert.Equal(t, 1, server.GetActiveStreamCount())
 		assert.Equal(t, uint32(streamHalfClosed), s.state)
 		s.Close()
-		assert.Equal(t, 0, server.ActiveStreams())
+		assert.Equal(t, 0, server.GetActiveStreamCount())
 		assert.Equal(t, uint32(streamClosed), s.state)
 		close(doneCh)
 	}()
@@ -226,7 +226,7 @@ func TestStream_RandomPackageSize(t *testing.T) {
 
 }
 
-//TODO:halfClose                       75.0%
+// TODO:halfClose                       75.0%
 func TestStream_HalfClose(t *testing.T) {
 	conf := testConf()
 	conf.ShareMemoryBufferCap = 1 << 20
@@ -404,7 +404,7 @@ func TestStream_SendQueueFullTimeout(t *testing.T) {
 	}
 }
 
-//reset                           92.9%
+// reset                           92.9%
 func TestStream_Reset(t *testing.T) {
 	conf := testConf()
 	client, server := testClientServerConfig(conf)
@@ -509,7 +509,7 @@ func TestStream_fillDataToReadBuffer(t *testing.T) {
 
 }
 
-//TODO: SwapBufferForReuse              66.7%
+// TODO: SwapBufferForReuse              66.7%
 func TestStream_SwapBufferForReuse(t *testing.T) {
 
 }

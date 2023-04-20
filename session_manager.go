@@ -60,7 +60,7 @@ type SessionManager struct {
 	epoch        uint64
 	randID       uint64
 	state        sessionSateType
-	sync.Mutex
+	sync.RWMutex
 }
 
 // SessionManagerConfig is the configuration of SessionManager
@@ -189,25 +189,25 @@ func (sm *SessionManager) background() {
 		go func(id int) {
 			defer sm.wg.Done()
 			for {
-				sm.Lock()
+				sm.RLock()
 				if sm.state == hotRestartState {
-					sm.Unlock()
+					sm.RUnlock()
 					time.Sleep(500 * time.Millisecond)
 					continue
 				}
 				pool := sm.pools[id]
-				sm.Unlock()
+				sm.RUnlock()
 
 				select {
 				case <-pool.Session().CloseChan():
-					sm.Lock()
+					sm.RLock()
 					epochID := sm.epoch
 					randID := sm.randID
 					if sm.state == hotRestartState || epochID != pool.Session().epochID || randID != pool.Session().randID {
-						sm.Unlock()
+						sm.RUnlock()
 						break
 					}
-					sm.Unlock()
+					sm.RUnlock()
 
 					pool.close()
 					for {
