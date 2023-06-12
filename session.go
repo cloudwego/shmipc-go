@@ -188,7 +188,7 @@ func newSessionLogger(isClient bool, out io.Writer) *logger {
 
 func (s *Session) initProtocol() error {
 	s.logger.infof("starting initializes shmipc protocol")
-	resultCh := make(chan error)
+	resultCh := make(chan error, 1)
 	timeout := time.NewTimer(s.config.InitializeTimeout)
 	defer timeout.Stop()
 

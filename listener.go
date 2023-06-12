@@ -297,7 +297,12 @@ func newSessions() *sessions { return &sessions{data: make(map[*Session]struct{}
 
 func (s *sessions) add(session *Session) {
 	s.sessionMu.Lock()
-	s.data[session] = struct{}{}
+	if s.data != nil {
+		s.data[session] = struct{}{}
+	} else {
+		session.logger.warnf("listener is closed, session %s will not be add", session.name)
+		session.Close()
+	}
 	s.sessionMu.Unlock()
 }
 
