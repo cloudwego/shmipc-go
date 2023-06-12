@@ -201,9 +201,8 @@ func (sm *SessionManager) background() {
 				select {
 				case <-pool.Session().CloseChan():
 					sm.RLock()
-					epochID := sm.epoch
-					randID := sm.randID
-					if sm.state == hotRestartState || epochID != pool.Session().epochID || randID != pool.Session().randID {
+					// in hotrestart state break this select and wait for hotrestar done
+					if sm.state == hotRestartState {
 						sm.RUnlock()
 						break
 					}
@@ -221,12 +220,16 @@ func (sm *SessionManager) background() {
 						case <-rebuildTimer.C:
 						}
 						sm.Lock()
-						// check the epoch before rebuild
-						if epochID != sm.epoch || randID != sm.randID {
+						// after rebuildTimer, check if Session.CloseChan caused by hotrestart,
+						// pool.epochId != sm.pools[id].epochId represent the pools has been replaced by the new epoch pools,
+						// this time Session.CloseChan will not rebuild session.
+						sessionHadChangedByHotrestart := sm.pools[id].Session().epochID != pool.Session().epochID
+						if sessionHadChangedByHotrestart {
 							sm.Unlock()
 							break
 						}
-						session, err := newClientSession(id, epochID, randID, sm.config)
+						// both new epoch pools and old epoch pools which has not been replaced will use new epochId to rebuild session
+						session, err := newClientSession(id, sm.epoch, sm.randID, sm.config)
 						sm.Unlock()
 						if err != nil {
 							internalLogger.errorf("rebuild stream pool's sessionID %d %s failed, reason:%s. retry after %s", id, pool.Session().name, err.Error(), sessionRebuildInterval.String())
