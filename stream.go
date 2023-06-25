@@ -108,8 +108,8 @@ func newStream(session *Session, id uint32) *Stream {
 	return s
 }
 
-//SetCallbacks used to set the StreamCallbacks.
-//Notice: It was just called only once, or return the error named ErrStreamCallbackHadExisted.
+// SetCallbacks used to set the StreamCallbacks.
+// Notice: It was just called only once, or return the error named ErrStreamCallbackHadExisted.
 func (s *Stream) SetCallbacks(callback StreamCallbacks) error {
 	if s.getCallbacks() != nil {
 		return ErrStreamCallbackHadExisted
@@ -139,7 +139,7 @@ func (s *Stream) readMore(minSize int) (err error) {
 		return nil
 	}
 
-	if recvLen == 0 && atomic.LoadUint32(&s.state) != uint32(streamOpened) {
+	if recvLen == 0 && !s.IsOpen() {
 		return ErrEndOfStream
 	}
 
@@ -174,7 +174,7 @@ func (s *Stream) readMore(minSize int) (err error) {
 			if s.recvBuf.Len() >= minSize {
 				return nil
 			}
-			if atomic.LoadUint32(&s.state) == uint32(streamHalfClosed) {
+			if s.getStreamState() == uint32(streamHalfClosed) {
 				return ErrEndOfStream
 			}
 			return ErrStreamClosed
@@ -201,7 +201,7 @@ func (s *Stream) Flush(endStream bool) error {
 		return nil
 	}
 	atomic.AddUint64(&s.session.stats.outFlowBytes, uint64(s.sendBuf.Len()))
-	state := atomic.LoadUint32(&s.state)
+	state := s.getStreamState()
 	if state != uint32(streamOpened) {
 		s.sendBuf.recycle()
 		return ErrStreamClosed
@@ -270,8 +270,8 @@ func (s *Stream) writeFallback(streamStatus uint32, err error) error {
 	return s.session.waitForSend(nil, data)
 }
 
-//Close used to close the stream, which maybe block if there is StreamCallbacks running.
-//if a stream was leaked, it's also mean that some share memory was leaked.
+// Close used to close the stream, which maybe block if there is StreamCallbacks running.
+// if a stream was leaked, it's also mean that some share memory was leaked.
 func (s *Stream) Close() error {
 	if s.getCallbacks() != nil {
 		atomic.StoreUint32(&s.callbackCloseState, uint32(callbackWaitExit))
@@ -287,7 +287,7 @@ func (s *Stream) Close() error {
 // close the stream. after close stream, any operation will return ErrStreamClosed.
 // unread data will be drained and released.
 func (s *Stream) close() error {
-	oldState := atomic.LoadUint32(&s.state)
+	oldState := s.getStreamState()
 	if oldState == uint32(streamClosed) {
 		return nil
 	}
@@ -301,13 +301,13 @@ func (s *Stream) close() error {
 			s.safeCloseNotify()
 			callback := s.getCallbacks()
 			if callback != nil {
-				if atomic.LoadUint32(&s.session.shutdown) == 1 {
+				if s.session.IsClosed() {
 					callback.OnRemoteClose()
 				} else {
 					callback.OnLocalClose()
 				}
 			}
-			if atomic.LoadUint32(&s.session.shutdown) == 1 {
+			if s.session.IsClosed() {
 				return nil
 			}
 			// notify peer
@@ -327,7 +327,7 @@ func (s *Stream) close() error {
 }
 
 func (s *Stream) clean() {
-	s.session.onStreamClose(s.id, streamState(atomic.LoadUint32(&s.state)))
+	s.session.onStreamClose(s.id, streamState(s.getStreamState()))
 	s.pendingData.clear()
 	s.recvBuf.recycle()
 	s.sendBuf.recycle()
@@ -345,7 +345,7 @@ func (s *Stream) halfClose() {
 
 // clean the stream's all status for reusing.
 func (s *Stream) reset() error {
-	if atomic.LoadUint32(&s.state) != uint32(streamOpened) {
+	if !s.IsOpen() {
 		return ErrStreamClosed
 	}
 	// return error if has any unread data
@@ -388,7 +388,7 @@ func (s *Stream) ReleaseReadAndReuse() {
 func (s *Stream) fillDataToReadBuffer(buf bufferSliceWrapper) error {
 	s.pendingData.add(buf)
 	//stream had closed, which maybe closed by user due to timeout.
-	if atomic.LoadUint32(&s.state) == uint32(streamClosed) {
+	if s.getStreamState() == uint32(streamClosed) {
 		s.pendingData.clear()
 		s.recvBuf.recycle()
 		return nil
@@ -446,9 +446,13 @@ func (s *Stream) SetWriteDeadline(t time.Time) error {
 	return nil
 }
 
-//IsOpen return whether the stream is open
+// IsOpen return whether the stream is open
 func (s *Stream) IsOpen() bool {
-	return atomic.LoadUint32(&s.state) == uint32(streamOpened)
+	return s.getStreamState() == uint32(streamOpened)
+}
+
+func (s *Stream) getStreamState() uint32 {
+	return atomic.LoadUint32(&s.state)
 }
 
 func (s *Stream) safeCloseNotify() {
@@ -539,14 +543,14 @@ func (s *Stream) getCallbacks() StreamCallbacks {
 	return nil
 }
 
-//Low performance api, it just adapt to the interface net.Conn, which will copy data from read buffer to `p`
-//please use BufferReader() API to implement zero copy read
+// Low performance api, it just adapt to the interface net.Conn, which will copy data from read buffer to `p`
+// please use BufferReader() API to implement zero copy read
 func (s *Stream) Read(p []byte) (int, error) {
 	return s.copyRead(p)
 }
 
-//Low performance api, it just adapt to the interface net.Conn, which will do copy data from `p` to write buffer
-//please use BufferWriter() API to implement zero copy write
+// Low performance api, it just adapt to the interface net.Conn, which will do copy data from `p` to write buffer
+// please use BufferWriter() API to implement zero copy write
 func (s *Stream) Write(p []byte) (int, error) {
 	return s.copyWriteAndFlush(p)
 }

@@ -220,7 +220,11 @@ func (s *Session) initProtocol() error {
 
 // IsClosed does a safe check to see if we have shutdown
 func (s *Session) IsClosed() bool {
-	return atomic.LoadUint32(&s.shutdown) == 1
+	return s.getSessionShutdown() == 1
+}
+
+func (s *Session) getSessionShutdown() uint32 {
+	return atomic.LoadUint32(&s.shutdown)
 }
 
 // IsHealthy return whether the session is healthy
@@ -247,7 +251,7 @@ func (s *Session) OpenStream() (*Stream, error) {
 	if s.IsClosed() {
 		return nil, s.shutdownErr
 	}
-	if atomic.LoadUint32(&s.unhealthy) == 1 {
+	if !s.IsHealthy() {
 		return nil, ErrSessionUnhealthy
 	}
 
@@ -485,7 +489,7 @@ func (s *Session) monitorLoop() {
 }
 
 func (s *Session) onEventData(buf []byte, conn eventConn) error {
-	if atomic.LoadUint32(&s.shutdown) == 1 {
+	if s.IsClosed() {
 		return nil
 	}
 	consumed, err := s.handleEvents(buf)
@@ -716,13 +720,13 @@ func (s *Session) GetMetrics() (PerformanceMetrics, StabilityMetrics, ShareMemor
 	//so here we need ensure that the session hadn't shutdown.
 	s.shutdownLock.Lock()
 	var sendQueueCount, receiveQueueCount uint64
-	if s.queueManager != nil && atomic.LoadUint32(&s.shutdown) == 0 {
+	if s.queueManager != nil && s.getSessionShutdown() == 0 {
 		sendQueueCount = uint64(atomic.LoadInt64(s.queueManager.sendQueue.tail))
 		receiveQueueCount = uint64(atomic.LoadInt64(s.queueManager.recvQueue.tail))
 	}
 	s.shutdownLock.Unlock()
 	var smm ShareMemoryMetrics
-	if s.bufferManager != nil && atomic.LoadUint32(&s.shutdown) == 0 {
+	if s.bufferManager != nil && s.getSessionShutdown() == 0 {
 		allShmBytes, inUsedShmBytes := uint32(0), uint32(0)
 		for _, l := range s.bufferManager.lists {
 			allShmBytes += (*l.cap) * (*l.capPerBuffer)
