@@ -31,7 +31,7 @@ var (
 // BufferWriter used to write data to stream.
 type BufferWriter interface {
 	//Len() return the current wrote size of buffer.
-	//It will traverse all underlying slices to compute the unread size, please dont's call frequently.
+	//It will traverse all underlying slices to compute the unread size, please don't call frequently.
 	Len() int
 	io.ByteWriter
 	//Reserve `size` byte share memory space, user could use it implement zero copy write.
@@ -49,7 +49,7 @@ type BufferReader interface {
 	io.ByteReader
 
 	//Len() return the current unread size of buffer.
-	//It will traverse all underlying slices to compute the unread size, please dont's call frequently.
+	//It will traverse all underlying slices to compute the unread size, please don't call frequently.
 	Len() int
 
 	//Read `size` bytes from share memory, which maybe block if size is greater than Len().
