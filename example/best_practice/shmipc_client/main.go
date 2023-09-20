@@ -121,6 +121,10 @@ func main() {
 
 					atomic.AddUint64(&count, 1)
 				}
+
+				//call `PutBack` return the stream to the stream pool for next time use, which will improve performance.
+				smgr.PutBack(stream)
+				//or call `stream.Close` the close Stream, otherwise it will be leak.
 			}
 		}()
 	}

@@ -49,7 +49,7 @@ func init() {
 	runtime.GOMAXPROCS(1)
 
 	go func() {
-		http.ListenAndServe(":20001", nil)//nolint:errcheck
+		http.ListenAndServe(":20001", nil) //nolint:errcheck
 	}()
 }
 
@@ -132,7 +132,6 @@ func main() {
 
 	for i := 0; i < concurrency; i++ {
 		go func() {
-			//for range time.Tick(time.Second) {
 			key := make([]byte, 1024)
 			rand.Read(key)
 			s := &streamCbImpl{key: key, smgr: smgr, loop: math.MaxUint64}
@@ -145,7 +144,7 @@ func main() {
 			s.n = 0
 			stream.SetCallbacks(s)
 			s.send()
-			//}
+			// and maybe call `smgr.PutBack()` or `stream.Close()` when you are no longer using the stream.
 		}()
 	}
 
