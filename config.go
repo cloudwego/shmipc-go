@@ -111,9 +111,17 @@ func VerifyConfig(config *Config) error {
 			return fmt.Errorf("BufferSliceSizes's Size:%d couldn't greater than ShareMemoryBufferCap:%d",
 				pair.Size, config.ShareMemoryBufferCap)
 		}
+
+		if isArmArch() && pair.Size%4 != 0 {
+			return fmt.Errorf("the SizePercentPair.Size must be a multiple of 4")
+		}
 	}
 	if sum != 100 {
 		return errors.New("the sum of BufferSliceSizes's Percent should be 100")
+	}
+
+	if isArmArch() && config.QueueCap%8 != 0 {
+		return fmt.Errorf("the QueueCap must be a multiple of 8")
 	}
 
 	if config.ShareMemoryPathPrefix == "" || config.QueuePath == "" {
@@ -122,6 +130,10 @@ func VerifyConfig(config *Config) error {
 
 	if runtime.GOOS != "linux" {
 		return ErrOSNonSupported
+	}
+
+	if runtime.GOARCH != "amd64" && runtime.GOARCH != "arm64" {
+		return ErrArchNonSupported
 	}
 
 	return nil

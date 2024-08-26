@@ -87,8 +87,7 @@ type bufferList struct {
 	// it points to the last free buffer, whose offset in bufferRegion
 	tail         *uint32
 	capPerBuffer *uint32
-	pushCount    *uint64
-	popCount     *uint64
+	counter      *int32
 	//underlying memory
 	bufferRegion            []byte
 	bufferRegionOffsetInShm uint32
@@ -360,8 +359,7 @@ func createFreeBufferList(bufferNum, capPerBuffer uint32, mem []byte, offsetInMe
 		head:                    (*uint32)(unsafe.Pointer(&mem[offsetInMem+8])),
 		tail:                    (*uint32)(unsafe.Pointer(&mem[offsetInMem+12])),
 		capPerBuffer:            (*uint32)(unsafe.Pointer(&mem[offsetInMem+16])),
-		pushCount:               (*uint64)(unsafe.Pointer(&mem[offsetInMem+20])),
-		popCount:                (*uint64)(unsafe.Pointer(&mem[offsetInMem+28])),
+		counter:                 (*int32)(unsafe.Pointer(&mem[offsetInMem+20])),
 		bufferRegion:            mem[offsetInMem+bufferListHeaderSize : offsetInMem+atLeastSize],
 		bufferRegionOffsetInShm: offsetInMem + bufferListHeaderSize,
 		offsetInShm:             offsetInMem,
@@ -371,8 +369,7 @@ func createFreeBufferList(bufferNum, capPerBuffer uint32, mem []byte, offsetInMe
 	*b.head = 0
 	*b.tail = (bufferNum - 1) * (capPerBuffer + bufferHeaderSize)
 	*b.capPerBuffer = capPerBuffer
-	*b.pushCount = 0
-	*b.popCount = 0
+	*b.counter = 0
 	internalLogger.infof("createFreeBufferList  bufferNum:%d capPerBuffer:%d offsetInMem:%d needSize:%d bufferRegionLen:%d",
 		bufferNum, capPerBuffer, offsetInMem, atLeastSize, len(b.bufferRegion))
 
@@ -404,8 +401,7 @@ func mappingFreeBufferList(mem []byte, offset uint32) (*bufferList, error) {
 		head:         (*uint32)(unsafe.Pointer(&mem[offset+8])),
 		tail:         (*uint32)(unsafe.Pointer(&mem[offset+12])),
 		capPerBuffer: (*uint32)(unsafe.Pointer(&mem[offset+16])),
-		pushCount:    (*uint64)(unsafe.Pointer(&mem[offset+20])),
-		popCount:     (*uint64)(unsafe.Pointer(&mem[offset+28])),
+		counter:      (*int32)(unsafe.Pointer(&mem[offset+24])),
 		offsetInShm:  offset,
 	}
 	needSize := countBufferListMemSize(*b.cap, *b.capPerBuffer)
@@ -433,7 +429,7 @@ func (b *bufferList) pop() (*bufferSlice, error) {
 				h := bufferHeader(b.bufferRegion[oldHead : oldHead+bufferHeaderSize])
 				h.clearFlag()
 				h.setInUsed()
-				atomic.AddUint64(b.popCount, 1)
+				atomic.AddInt32(b.counter, 1)
 				return newBufferSlice(h,
 					b.bufferRegion[oldHead+bufferHeaderSize:oldHead+bufferHeaderSize+*b.capPerBuffer],
 					oldHead+b.bufferRegionOffsetInShm, true), nil
@@ -459,7 +455,7 @@ func (b *bufferList) push(buffer *bufferSlice) {
 		if atomic.CompareAndSwapUint32(b.tail, oldTail, newTail) {
 			bufferHeader(b.bufferRegion[oldTail : oldTail+bufferHeaderSize]).linkNext(newTail)
 			atomic.AddInt32(b.size, 1)
-			atomic.AddUint64(b.pushCount, 1)
+			atomic.AddInt32(b.counter, -1)
 			return
 		}
 	}
@@ -610,7 +606,7 @@ func (b *bufferManager) checkBufferReturned() bool {
 		if uint32(atomic.LoadInt32(l.size)) != atomic.LoadUint32(l.cap) {
 			return false
 		}
-		if atomic.LoadUint64(l.pushCount) != atomic.LoadUint64(l.popCount) {
+		if atomic.LoadInt32(l.counter) != 0 {
 			return false
 		}
 	}

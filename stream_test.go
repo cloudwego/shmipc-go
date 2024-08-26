@@ -54,7 +54,7 @@ func newClientServerWithNoCheck(conf *Config) (client *Session, server *Session)
 // Close                           94.4%
 func TestStream_Close(t *testing.T) {
 	c := testConf()
-	c.QueueCap = 1
+	c.QueueCap = 8
 	client, server := newClientServerWithNoCheck(c)
 	defer server.Close()
 	defer client.Close()
@@ -312,14 +312,14 @@ func TestStream_HalfClose(t *testing.T) {
 
 func TestStream_SendQueueFull(t *testing.T) {
 	conf := testConf()
-	conf.QueueCap = 1 // can only contain 1 queue elem(12B)
+	conf.QueueCap = 8 // can only contain 1 queue elem(12B)
 	client, server := testClientServerConfig(conf)
 	defer client.Close()
 	defer server.Close()
 
 	done := make(chan struct{})
 	dataSize := 10
-	mockDataLength := 50
+	mockDataLength := 500
 	mockData := make([][]byte, mockDataLength)
 	for i := range mockData {
 		mockData[i] = make([]byte, dataSize)
@@ -367,13 +367,13 @@ func TestStream_SendQueueFull(t *testing.T) {
 
 func TestStream_SendQueueFullTimeout(t *testing.T) {
 	conf := testConf()
-	conf.QueueCap = 1 // can only contain 1 queue elem(12B)
+	conf.QueueCap = 8 // can only contain 1 queue elem(12B)
 	client, server := testClientServerConfig(conf)
 	defer client.Close()
 	defer server.Close()
 
 	dataSize := 10
-	mockDataLength := 5
+	mockDataLength := 500
 	mockData := make([][]byte, mockDataLength)
 	for i := range mockData {
 		mockData[i] = make([]byte, dataSize)

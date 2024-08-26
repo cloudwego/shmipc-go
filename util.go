@@ -133,3 +133,7 @@ func safeRemoveUdsFile(filename string) bool {
 
 	return true
 }
+
+func isArmArch() bool {
+	return runtime.GOARCH == "arm" || runtime.GOARCH == "arm64"
+}
