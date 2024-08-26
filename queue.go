@@ -126,6 +126,10 @@ func mappingQueueManagerMemfd(queuePathName string, memFd int) (*queueManager, e
 	}
 
 	mappingSize := int(fileInfo.Size)
+	//a queueManager have two queue, a queue's head and tail should align to 8 byte boundary
+	if isArmArch() && mappingSize%16 != 0 {
+		return nil, fmt.Errorf("the memory size of queue should be a multiple of 16")
+	}
 	mem, err := syscall.Mmap(memFd, 0, mappingSize, syscall.PROT_READ|syscall.PROT_WRITE, syscall.MAP_SHARED)
 	if err != nil {
 		return nil, err
@@ -152,6 +156,10 @@ func mappingQueueManager(shmPath string) (*queueManager, error) {
 	}
 	mappingSize := int(fileInfo.Size())
 
+	//a queueManager have two queue, a queue's head and tail should align to 8 byte boundary
+	if isArmArch() && mappingSize%16 != 0 {
+		return nil, fmt.Errorf("the memory size of queue should be a multiple of 16")
+	}
 	mem, err := syscall.Mmap(int(f.Fd()), 0, mappingSize, syscall.PROT_READ|syscall.PROT_WRITE, syscall.MAP_SHARED)
 	if err != nil {
 		return nil, err
@@ -181,6 +189,16 @@ func mappingQueueFromBytes(data []byte) *queue {
 	cap := *(*uint32)(unsafe.Pointer(&data[0]))
 	queueStartOffset := queueHeaderLength
 	queueEndOffset := queueHeaderLength + cap*queueElementLen
+	if isArmArch() {
+		// align 8 byte boundary for head and tail
+		return &queue{
+			cap:                int64(cap),
+			workingFlag:        (*uint32)(unsafe.Pointer(&data[4])),
+			head:               (*int64)(unsafe.Pointer(&data[8])),
+			tail:               (*int64)(unsafe.Pointer(&data[16])),
+			queueBytesOnMemory: data[queueStartOffset:queueEndOffset],
+		}
+	}
 	return &queue{
 		cap:                int64(cap),
 		head:               (*int64)(unsafe.Pointer(&data[4])),

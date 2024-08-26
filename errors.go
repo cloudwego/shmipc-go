@@ -67,6 +67,9 @@ var (
 	//ErrOSNonSupported means that shmipc couldn't work in current OS. (only support Linux now)
 	ErrOSNonSupported = errors.New("shmipc just support linux OS now")
 
+	//ErrArchNonSupported means that shmipc only support amd64 and arm64
+	ErrArchNonSupported = errors.New("shmipc just support amd64 or arm64 arch")
+
 	//ErrHotRestartInProgress was returned by Listener.HotRestart when the Session had under the hot restart state
 	ErrHotRestartInProgress = errors.New("hot restart in progress, try again later")
 
