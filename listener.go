@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-//ListenCallback is server's asynchronous API
+// ListenCallback is server's asynchronous API
 type ListenCallback interface {
 	//OnNewStream was called when accept a new stream
 	OnNewStream(s *Stream)
@@ -36,7 +36,7 @@ type ListenCallback interface {
 	OnShutdown(reason string)
 }
 
-//ListenerConfig is the configuration of Listener
+// ListenerConfig is the configuration of Listener
 type ListenerConfig struct {
 	*Config
 	Network string //Only support unix or tcp
@@ -45,7 +45,7 @@ type ListenerConfig struct {
 	ListenPath string
 }
 
-//Listener listen socket and accept connection as shmipc server connection
+// Listener listen socket and accept connection as shmipc server connection
 type Listener struct {
 	mu                 sync.Mutex
 	dispatcher         dispatcher
@@ -62,7 +62,7 @@ type Listener struct {
 	unlinkOnClose      bool
 }
 
-//NewDefaultListenerConfig return the default Listener's config
+// NewDefaultListenerConfig return the default Listener's config
 func NewDefaultListenerConfig(listenPath string, network string) *ListenerConfig {
 	return &ListenerConfig{
 		Config:     DefaultConfig(),
@@ -71,7 +71,7 @@ func NewDefaultListenerConfig(listenPath string, network string) *ListenerConfig
 	}
 }
 
-//NewListener will try listen the ListenPath of the configuration, and return the Listener if no error happened.
+// NewListener will try listen the ListenPath of the configuration, and return the Listener if no error happened.
 func NewListener(callback ListenCallback, config *ListenerConfig) (*Listener, error) {
 	if callback == nil {
 		return nil, errors.New("ListenCallback couldn't be nil")
@@ -81,7 +81,14 @@ func NewListener(callback ListenCallback, config *ListenerConfig) (*Listener, er
 		return nil, fmt.Errorf("only support linux OS")
 	}
 
-	safeRemoveUdsFile(config.ListenPath)
+	if config.MemMapType == MemMapTypeMemFd && config.Network != "unix" {
+		return nil, errors.New("config.Network must be unix when config.MemMapType is MemMapTypeMemFd")
+	}
+
+	if config.Network == "unix" {
+		safeRemoveUdsFile(config.ListenPath)
+	}
+	
 	ln, err := net.Listen(config.Network, config.ListenPath)
 
 	if err != nil {
@@ -122,17 +129,17 @@ func (l *Listener) Close() error {
 	return nil
 }
 
-//Addr returns the listener's network address.
+// Addr returns the listener's network address.
 func (l *Listener) Addr() net.Addr {
 	return l.ln.Addr()
 }
 
-//Accept doesn't work, whose existence just adapt to the net.Listener interface.
+// Accept doesn't work, whose existence just adapt to the net.Listener interface.
 func (l *Listener) Accept() (net.Conn, error) {
 	return nil, errors.New("not support now, just compact net.Listener interface")
 }
 
-//Run starting a loop to listen socket
+// Run starting a loop to listen socket
 func (l *Listener) Run() error {
 	for {
 		conn, err := l.ln.Accept()
@@ -164,7 +171,7 @@ func (l *Listener) Run() error {
 	return nil
 }
 
-//HotRestart will do shmipc server hot restart
+// HotRestart will do shmipc server hot restart
 func (l *Listener) HotRestart(epoch uint64) error {
 	l.logger.warnf("begin HotRestart epoch:%d", epoch)
 
@@ -204,7 +211,7 @@ func (l *Listener) HotRestart(epoch uint64) error {
 	return nil
 }
 
-//IsHotRestartDone return whether the Listener is under the hot restart state.
+// IsHotRestartDone return whether the Listener is under the hot restart state.
 func (l *Listener) IsHotRestartDone() bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -212,7 +219,7 @@ func (l *Listener) IsHotRestartDone() bool {
 	return l.state != hotRestartState
 }
 
-//SetUnlinkOnClose sets whether unlink unix socket path when Listener was stopped
+// SetUnlinkOnClose sets whether unlink unix socket path when Listener was stopped
 func (l *Listener) SetUnlinkOnClose(unlink bool) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
