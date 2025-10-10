@@ -1,3 +1,4 @@
+//go:build race
 // +build race
 
 /*
@@ -21,11 +22,11 @@ package shmipc
 import (
 	"encoding/binary"
 	"fmt"
+	syscall "golang.org/x/sys/unix"
 	"os"
 	"runtime"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"unsafe"
 )
 
@@ -75,7 +76,7 @@ func (c *connEventHandler) onRemoteClose() {
 	c.deferredClose()
 }
 
-//avoiding write concurrently, blocking until return
+// avoiding write concurrently, blocking until return
 func (c *connEventHandler) writev(data ...[]byte) error {
 	if len(data) == 0 {
 		return nil
@@ -136,7 +137,7 @@ func (c *connEventHandler) doWritev(data ...[]byte) (int, error) {
 	return writtenSliceNum, nil
 }
 
-//avoiding write concurrently, blocking until return
+// avoiding write concurrently, blocking until return
 func (c *connEventHandler) write(data []byte) error {
 	written, size := 0, len(data)
 	for written < size {

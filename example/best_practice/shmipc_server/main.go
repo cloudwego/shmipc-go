@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	syscall "golang.org/x/sys/unix"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
@@ -25,7 +26,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync/atomic"
-	"syscall"
 	"time"
 
 	"github.com/cloudwego/shmipc-go"

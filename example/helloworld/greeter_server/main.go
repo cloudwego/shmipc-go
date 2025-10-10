@@ -18,10 +18,10 @@ package main
 
 import (
 	"fmt"
+	syscall "golang.org/x/sys/unix"
 	"net"
 	"os"
 	"path/filepath"
-	"syscall"
 	"time"
 
 	"github.com/cloudwego/shmipc-go"

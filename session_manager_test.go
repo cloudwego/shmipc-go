@@ -18,13 +18,13 @@ package shmipc
 
 import (
 	"fmt"
+	syscall "golang.org/x/sys/unix"
 	"math/rand"
 	"net"
 	_ "net/http/pprof"
 	"runtime"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"testing"
 	"time"
 

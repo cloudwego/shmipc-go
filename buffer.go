@@ -21,6 +21,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"unsafe"
+
+	"github.com/bytedance/gopkg/lang/dirtmake"
 )
 
 var (
@@ -333,7 +335,7 @@ func (l *linkedBuffer) ReadBytes(size int) (result []byte, err error) {
 	}
 	// slow path
 	l.len -= size
-	result = make([]byte, 0, size)
+	result = dirtmake.Bytes(0, size)
 
 	for size > 0 {
 		readData, _ := l.sliceList.front().read(size)

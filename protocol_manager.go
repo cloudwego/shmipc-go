@@ -20,12 +20,12 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	syscall "golang.org/x/sys/unix"
 	"io"
 	"os"
 	"runtime"
 	"strings"
 	"sync/atomic"
-	"syscall"
 )
 
 // Ensure that the index of the handler matches the message type

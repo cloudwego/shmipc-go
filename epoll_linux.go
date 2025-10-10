@@ -1,3 +1,4 @@
+//go:build !arm64
 // +build !arm64
 
 /*
@@ -19,11 +20,12 @@
 package shmipc
 
 import (
-	"syscall"
+	syscall "golang.org/x/sys/unix"
+
 	"unsafe"
 )
 
-const epollModeET = -syscall.EPOLLET
+const epollModeET = syscall.EPOLLET
 
 type epollEvent struct {
 	events uint32

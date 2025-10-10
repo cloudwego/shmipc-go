@@ -19,11 +19,11 @@ package shmipc
 import (
 	"errors"
 	"fmt"
+	syscall "golang.org/x/sys/unix"
 	"os"
 	"path/filepath"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"unsafe"
 )
 
@@ -40,7 +40,7 @@ type queueManager struct {
 	memFd       int
 }
 
-//default cap is 16384, which mean that 16384 * 8 = 128 KB memory.
+// default cap is 16384, which mean that 16384 * 8 = 128 KB memory.
 type queue struct {
 	sync.Mutex
 	head               *int64  // consumer write, producer read
@@ -208,7 +208,7 @@ func mappingQueueFromBytes(data []byte) *queue {
 	}
 }
 
-//cap prefer equals 2^n
+// cap prefer equals 2^n
 func createQueue(cap uint32) *queue {
 	return createQueueFromBytes(make([]byte, queueHeaderLength+int(cap*queueElementLen)), cap)
 }

@@ -90,8 +90,8 @@ func init() {
 	}
 }
 
-//SetLogLevel used to change the internal logger's level and the default level is Warning.
-//The process env `SHMIPC_LOG_LEVEL` also could set log level
+// SetLogLevel used to change the internal logger's level and the default level is Warning.
+// The process env `SHMIPC_LOG_LEVEL` also could set log level
 func SetLogLevel(l int) {
 	if l <= levelNoPrint {
 		level = l
@@ -229,15 +229,15 @@ func computeFreeSliceNum(list *bufferList) int {
 	return freeSlices
 }
 
-//1.occurred memory leak, if list's free slice number != expect free slice number.
-//2.print the metadata and payload of the leaked slice.
+// 1.occurred memory leak, if list's free slice number != expect free slice number.
+// 2.print the metadata and payload of the leaked slice.
 func debugBufferListDetail(path string, bufferMgrHeaderSize int, bufferHeaderSize int) {
 	mem, err := ioutil.ReadFile(path)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	bm, err := mappingBufferManager(path, mem, 0)
+	bm, _ := mappingBufferManager(path, mem, 0)
 	expectAllSliceNum := uint32(0)
 	for i, list := range bm.lists {
 		fmt.Printf("%d. list capacity:%d size:%d realSize:%d perSliceCap:%d headOffset:%d tailOffset:%d\n",
@@ -276,15 +276,15 @@ func printLeakShareMemory(bm *bufferManager, bufferMgrHeaderSize int, bufferHead
 	}
 }
 
-//DebugBufferListDetail print all BufferList's status in share memory located in the `path`
-//if MemMapType is MemMapTypeMemFd, you could using the command that
-//`lsof -p $PID` to found the share memory which was mmap by memfd,
-//and the command `cat /proc/$PID/$MEMFD > $path` dump the share memory to file system.
+// DebugBufferListDetail print all BufferList's status in share memory located in the `path`
+// if MemMapType is MemMapTypeMemFd, you could using the command that
+// `lsof -p $PID` to found the share memory which was mmap by memfd,
+// and the command `cat /proc/$PID/$MEMFD > $path` dump the share memory to file system.
 func DebugBufferListDetail(path string) {
 	debugBufferListDetail(path, 8, 20)
 }
 
-//DebugQueueDetail print IO-Queue's status which was mmap in the `path`
+// DebugQueueDetail print IO-Queue's status which was mmap in the `path`
 func DebugQueueDetail(path string) {
 	mem, err := ioutil.ReadFile(path)
 	if err != nil {
