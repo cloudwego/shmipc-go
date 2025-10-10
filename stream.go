@@ -488,6 +488,29 @@ func (r *pendingData) moveToWithoutLock(toBuf *linkedBuffer) {
 				r.stream.session.logger.error("readBufferSlice error" + err.Error())
 				break
 			}
+			if slice.size() == 0 {
+				// 首个slice就是空切片直接回收即可
+				if toBuf.sliceList.front() == nil {
+					offset = slice.nextBufferOffset()
+					r.stream.session.bufferManager.recycleBuffer(slice)
+					continue
+				}
+				// 找到最后一个slice 只要front()有值 back() 就一定有值
+				preSlice := toBuf.sliceList.back()
+				if slice.hasNext() {
+					// 如果当前空slice有下一个slice，直接修改preSlice的next slice 并回收当前slice
+					preSlice.linkNext(slice.nextBufferOffset())
+					offset = slice.nextBufferOffset() // 索引下一个
+					r.stream.session.bufferManager.recycleBuffer(slice)
+					continue
+				} else {
+					// 如果当前空slice是最后一个slice, 清除最后一个slice的next flag 并且回收当前slice
+					preSlice.clearFlag()
+					preSlice.setInUsed()
+					r.stream.session.bufferManager.recycleBuffer(slice)
+					break
+				}
+			}
 			toBuf.appendBufferSlice(slice)
 			if !slice.hasNext() {
 				break

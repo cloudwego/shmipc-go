@@ -18,6 +18,7 @@ package shmipc
 
 import (
 	"fmt"
+	syscall "golang.org/x/sys/unix"
 	"io"
 	"math/rand"
 	"net"
@@ -25,7 +26,6 @@ import (
 	"runtime"
 	"strconv"
 	"sync"
-	"syscall"
 	"testing"
 	"time"
 

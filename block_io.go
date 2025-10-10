@@ -18,8 +18,8 @@ package shmipc
 
 import (
 	"fmt"
+	syscall "golang.org/x/sys/unix"
 	"io"
-	"syscall"
 )
 
 func blockReadFull(connFd int, data []byte) error {

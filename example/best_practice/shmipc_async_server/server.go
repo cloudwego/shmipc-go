@@ -18,13 +18,13 @@ package main
 
 import (
 	"fmt"
+	syscall "golang.org/x/sys/unix"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"path/filepath"
 	"runtime"
 	"sync/atomic"
-	"syscall"
 	"time"
 
 	"github.com/cloudwego/shmipc-go"
@@ -102,7 +102,7 @@ func init() {
 	runtime.GOMAXPROCS(1)
 
 	go func() {
-		http.ListenAndServe(":20000", nil)//nolint:errcheck
+		http.ListenAndServe(":20000", nil) //nolint:errcheck
 	}()
 }
 

@@ -19,12 +19,12 @@ package shmipc
 import (
 	"errors"
 	"fmt"
+	syscall "golang.org/x/sys/unix"
 	"os"
 	"path/filepath"
 	"sort"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"time"
 	"unsafe"
 )

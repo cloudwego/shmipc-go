@@ -17,7 +17,7 @@
 package shmipc
 
 import (
-	"syscall"
+	syscall "golang.org/x/sys/unix"
 	"unsafe"
 )
 

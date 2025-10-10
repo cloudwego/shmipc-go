@@ -88,6 +88,7 @@ func string2bytesZeroCopy(s string) []byte {
 		Cap:  stringHeader.Len,
 	}
 
+	//nolint:govet
 	return *(*[]byte)(unsafe.Pointer(&bh))
 }
 
@@ -99,9 +100,9 @@ func pathExists(path string) bool {
 	return true
 }
 
-//In Linux OS,  there is a limitation which is the capacity of the tmpfs (which usually on the directory /dev/shm).
-//if we do mmap on /dev/shm/xxx and the free memory of the tmpfs is not enough, mmap have no any error.
-//but when program is  running, it maybe crashed due to the bus error.
+// In Linux OS,  there is a limitation which is the capacity of the tmpfs (which usually on the directory /dev/shm).
+// if we do mmap on /dev/shm/xxx and the free memory of the tmpfs is not enough, mmap have no any error.
+// but when program is  running, it maybe crashed due to the bus error.
 func canCreateOnDevShm(size uint64, path string) bool {
 	if runtime.GOOS == "linux" && strings.Contains(path, "/dev/shm") {
 		stat, err := disk.Usage("/dev/shm")

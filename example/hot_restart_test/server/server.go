@@ -19,6 +19,7 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	syscall "golang.org/x/sys/unix"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
@@ -27,7 +28,6 @@ import (
 	"runtime"
 	"strconv"
 	"sync/atomic"
-	"syscall"
 	"time"
 
 	"github.com/cloudwego/shmipc-go"
@@ -89,7 +89,7 @@ func Init() {
 	}
 
 	go func() {
-		http.ListenAndServe(fmt.Sprintf(":%d", debugPort), nil)//nolint:errcheck
+		http.ListenAndServe(fmt.Sprintf(":%d", debugPort), nil) //nolint:errcheck
 	}()
 }
 

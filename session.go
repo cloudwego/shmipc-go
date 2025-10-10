@@ -112,7 +112,7 @@ func newSession(config *Config, conn net.Conn, isClient bool) (*Session, error) 
 	}
 
 	if err := VerifyConfig(config); err != nil {
-		return nil, fmt.Errorf("VerifyConfig failed:" + err.Error())
+		return nil, fmt.Errorf("VerifyConfig failed: %s", err.Error())
 	}
 
 	if config.MemMapType == MemMapTypeMemFd {
@@ -123,7 +123,7 @@ func newSession(config *Config, conn net.Conn, isClient bool) (*Session, error) 
 
 	fd, err := getConnDupFd(conn)
 	if err != nil {
-		return nil, fmt.Errorf("could get fd from conn,reason=" + err.Error())
+		return nil, fmt.Errorf("could get fd from conn,reason=%s", err.Error())
 	}
 	// had dup fd, we manage the dup fd in internal's event loop
 	defer conn.Close()
