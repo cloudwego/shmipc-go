@@ -18,42 +18,42 @@ Shmipc在共享内存中引入了一个IO队列来描述通讯数据的元信息
 
 ## 性能测试
 
-源码中 bench_test.go 进行了Shmipc与Unix domain socket在ping-pong场景下不同数据包大小的性能对比，结果如下所示: 从小包到大包均有性能提升。
+源码中 bench_test.go 进行了Shmipc与Unix domain socket在ping-pong场景下不同数据包大小的性能对比，结果如下所示: 小包场景性能相当，包越大Shmipc的性能优势越明显。
 
 ```
 go test -bench=BenchmarkParallelPingPong -run BenchmarkParallelPingPong
 goos: linux
 goarch: amd64
 pkg: github.com/cloudwego/shmipc-go
-cpu: Intel(R) Xeon(R) CPU E5-2630 v4 @ 2.20GHz
-BenchmarkParallelPingPongByShmipc64B-40      	  733821	      1970 ns/op	  64.97 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByShmipc512B-40     	  536190	      1990 ns/op	 514.45 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByShmipc1KB-40      	  540517	      2045 ns/op	1001.62 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByShmipc4KB-40      	  509047	      2063 ns/op	3970.91 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByShmipc16KB-40     	  590398	      1996 ns/op	16419.46 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByShmipc32KB-40     	  607756	      1937 ns/op	33829.82 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByShmipc64KB-40     	  609824	      1995 ns/op	65689.31 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByShmipc256KB-40    	  622755	      1793 ns/op	292363.56 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByShmipc512KB-40    	  695401	      1993 ns/op	526171.77 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByShmipc1MB-40      	  538208	      1873 ns/op	1119401.64 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByShmipc4MB-40      	  606144	      1891 ns/op	4436936.93 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByUds64B-40         	  446019	      2657 ns/op	  48.18 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByUds512B-40        	  450124	      2665 ns/op	 384.30 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByUds1KB-40         	  446389	      2680 ns/op	 764.29 MB/s	       0 B/op	       0 allocs/op
-BenchmarkParallelPingPongByUds4KB-40         	  383552	      3093 ns/op	2648.83 MB/s	       1 B/op	       0 allocs/op
-BenchmarkParallelPingPongByUds16KB-40        	  307816	      3884 ns/op	8436.27 MB/s	       8 B/op	       0 allocs/op
-BenchmarkParallelPingPongByUds64KB-40        	  103027	     10259 ns/op	12776.17 MB/s	     102 B/op	       0 allocs/op
-BenchmarkParallelPingPongByUds256KB-40       	   25286	     46352 ns/op	11311.01 MB/s	    1661 B/op	       0 allocs/op
-BenchmarkParallelPingPongByUds512KB-40       	    9788	    122873 ns/op	8533.84 MB/s	    8576 B/op	       0 allocs/op
-BenchmarkParallelPingPongByUds1MB-40         	    4177	    283729 ns/op	7391.38 MB/s	   40178 B/op	       0 allocs/op
-BenchmarkParallelPingPongByUds4MB-40         	     919	   1253338 ns/op	6693.01 MB/s	  730296 B/op	       1 allocs/op
+cpu: Intel(R) Xeon(R) Platinum 8260 CPU @ 2.40GHz
+BenchmarkParallelPingPongByShmipc64B-8     	  144470	      7740 ns/op	  25.84 MB/s	     272 B/op	       6 allocs/op
+BenchmarkParallelPingPongByShmipc512B-8    	  145243	      8727 ns/op	 159.51 MB/s	    1170 B/op	       6 allocs/op
+BenchmarkParallelPingPongByShmipc1KB-8     	  137221	     11467 ns/op	 240.69 MB/s	    2199 B/op	       6 allocs/op
+BenchmarkParallelPingPongByShmipc4KB-8     	   67123	     16574 ns/op	 660.78 MB/s	    8403 B/op	       6 allocs/op
+BenchmarkParallelPingPongByShmipc16KB-8    	   37604	     34197 ns/op	1278.49 MB/s	   33711 B/op	       6 allocs/op
+BenchmarkParallelPingPongByShmipc64KB-8    	   12418	     97118 ns/op	1799.79 MB/s	  138413 B/op	       6 allocs/op
+BenchmarkParallelPingPongByShmipc256KB-8   	    3885	    347648 ns/op	2010.89 MB/s	  561896 B/op	       7 allocs/op
+BenchmarkParallelPingPongByShmipc512KB-8   	    2122	    567535 ns/op	2463.51 MB/s	 1126969 B/op	       7 allocs/op
+BenchmarkParallelPingPongByShmipc1MB-8     	    1147	   1078216 ns/op	2593.39 MB/s	 2258771 B/op	       7 allocs/op
+BenchmarkParallelPingPongByShmipc4MB-8     	     302	   4163412 ns/op	2686.46 MB/s	 9185775 B/op	       8 allocs/op
+BenchmarkParallelPingPongByUds64B-8        	  227320	      5523 ns/op	  36.21 MB/s	     720 B/op	      10 allocs/op
+BenchmarkParallelPingPongByUds512B-8       	  123703	      8154 ns/op	 170.72 MB/s	    3988 B/op	      10 allocs/op
+BenchmarkParallelPingPongByUds1KB-8        	  100774	     10796 ns/op	 255.66 MB/s	    7837 B/op	      10 allocs/op
+BenchmarkParallelPingPongByUds4KB-8        	   39502	     31889 ns/op	 343.44 MB/s	   33147 B/op	      10 allocs/op
+BenchmarkParallelPingPongByUds16KB-8       	   10116	    114273 ns/op	 382.59 MB/s	  134418 B/op	      10 allocs/op
+BenchmarkParallelPingPongByUds64KB-8       	    5803	    216532 ns/op	 807.23 MB/s	  521737 B/op	      11 allocs/op
+BenchmarkParallelPingPongByUds256KB-8      	    2078	    520211 ns/op	1343.84 MB/s	 2043899 B/op	      11 allocs/op
+BenchmarkParallelPingPongByUds512KB-8      	    1237	    892046 ns/op	1567.33 MB/s	 4061270 B/op	      11 allocs/op
+BenchmarkParallelPingPongByUds1MB-8        	     703	   2626436 ns/op	1064.65 MB/s	 8087850 B/op	      11 allocs/op
+BenchmarkParallelPingPongByUds4MB-8        	     171	   5893266 ns/op	1897.90 MB/s	33747030 B/op	      13 allocs/op
 PASS
-ok  	github.com/cloudwego/shmipc	42.138s
+ok  	github.com/cloudwego/shmipc-go	43.834s
 ```
 
 - BenchmarkParallelPingPongByUds，基于Unix domain socket进行ping-pong通讯。
 - BenchmarkParallelPingPongByShmipc，基于Shmipc进行ping-pong通讯。
 - 后缀为ping-pong的数据包大小， 从 64 Byte ~ 4MB 不等。
+- Stream.BufferWriter()和Stream.BufferReader()提供了共享内存的buffer读写接口，其中使用ReadBytes()和Reserve()方法可以进行零拷贝的读和写.
 
 ### 快速开始
 
