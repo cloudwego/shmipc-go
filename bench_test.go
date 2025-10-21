@@ -17,6 +17,8 @@
 package shmipc
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	syscall "golang.org/x/sys/unix"
 	"io"
@@ -27,6 +29,38 @@ import (
 	"strconv"
 	"testing"
 	"time"
+)
+
+type pingpong struct {
+	Data []byte `json:"data"`
+}
+
+var (
+	likelySizes = map[string]int{
+		"64B":   100,
+		"512B":  696,
+		"1KB":   1380,
+		"4KB":   5476,
+		"16KB":  21860,
+		"64KB":  87396,
+		"256KB": 349540,
+		"512KB": 699064,
+		"1MB":   1398116,
+		"4MB":   5592420,
+	}
+
+	dataSizes = map[string]int{
+		"64B":   64,
+		"512B":  512,
+		"1KB":   1 << 10,
+		"4KB":   4 << 10,
+		"16KB":  16 << 10,
+		"64KB":  64 << 10,
+		"256KB": 256 << 10,
+		"512KB": 512 << 10,
+		"1MB":   1 << 20,
+		"4MB":   4 << 20,
+	}
 )
 
 func init() {
@@ -51,9 +85,7 @@ func newBenchmarkClientServer(likelySize uint32) (client, server *Session) {
 		config.ShareMemoryBufferCap = 512 << 20
 	}
 	config.BufferSliceSizes = []*SizePercentPair{
-		{likelySize + 256, 70},
-		{16 << 10, 20},
-		{64 << 10, 10},
+		{likelySize, 100},
 	}
 	config.ShareMemoryPathPrefix += strconv.Itoa(int(rand.Int63()))
 	addr := &net.UnixAddr{Name: "/dev/shm/shmipc.sock", Net: "unix"}
@@ -89,62 +121,64 @@ func newBenchmarkClientServer(likelySize uint32) (client, server *Session) {
 }
 
 func BenchmarkParallelPingPongByShmipc64B(b *testing.B) {
-	const payloadSize = 64
-	benchmarkParallelPingPongByShmipc(b, payloadSize, payloadSize)
+	benchmarkParallelPingPongByShmipc(b, "64B")
 }
 
 func BenchmarkParallelPingPongByShmipc512B(b *testing.B) {
-	const payloadSize = 512
-	benchmarkParallelPingPongByShmipc(b, payloadSize, payloadSize)
+	benchmarkParallelPingPongByShmipc(b, "512B")
 }
 
 func BenchmarkParallelPingPongByShmipc1KB(b *testing.B) {
-	const payloadSize = 1024
-	benchmarkParallelPingPongByShmipc(b, payloadSize, payloadSize)
+	benchmarkParallelPingPongByShmipc(b, "1KB")
 }
 
 func BenchmarkParallelPingPongByShmipc4KB(b *testing.B) {
-	const payloadSize = 4096
-	benchmarkParallelPingPongByShmipc(b, payloadSize, payloadSize)
+	benchmarkParallelPingPongByShmipc(b, "4KB")
 }
 
 func BenchmarkParallelPingPongByShmipc16KB(b *testing.B) {
-	const payloadSize = 16 << 10
-	benchmarkParallelPingPongByShmipc(b, payloadSize, payloadSize)
-}
-
-func BenchmarkParallelPingPongByShmipc32KB(b *testing.B) {
-	const payloadSize = 32 << 10
-	benchmarkParallelPingPongByShmipc(b, payloadSize, payloadSize)
+	benchmarkParallelPingPongByShmipc(b, "16KB")
 }
 
 func BenchmarkParallelPingPongByShmipc64KB(b *testing.B) {
-	const payloadSize = 64 << 10
-	benchmarkParallelPingPongByShmipc(b, payloadSize, payloadSize)
+	benchmarkParallelPingPongByShmipc(b, "64KB")
 }
 
 func BenchmarkParallelPingPongByShmipc256KB(b *testing.B) {
-	const payloadSize = 256 << 10
-	benchmarkParallelPingPongByShmipc(b, payloadSize, payloadSize)
+	benchmarkParallelPingPongByShmipc(b, "256KB")
 }
 
 func BenchmarkParallelPingPongByShmipc512KB(b *testing.B) {
 	const payloadSize = 512 << 10
-	benchmarkParallelPingPongByShmipc(b, payloadSize, payloadSize)
+	benchmarkParallelPingPongByShmipc(b, "512KB")
 }
 
 func BenchmarkParallelPingPongByShmipc1MB(b *testing.B) {
 	const payloadSize = 1 << 20
-	benchmarkParallelPingPongByShmipc(b, payloadSize, payloadSize)
+	benchmarkParallelPingPongByShmipc(b, "1MB")
 }
 
 func BenchmarkParallelPingPongByShmipc4MB(b *testing.B) {
-	const payloadSize = 4 << 20
-	benchmarkParallelPingPongByShmipc(b, payloadSize, payloadSize)
+	benchmarkParallelPingPongByShmipc(b, "4MB")
 }
 
-func mustWrite(s *Stream, size int, b *testing.B) {
-	s.sendBuf.writeEmpty(size)
+func mustWrite(s *Stream, bodySize string, b *testing.B) {
+	request := pingpong{
+		Data: make([]byte, dataSizes[bodySize]),
+	}
+	reserve, err := s.BufferWriter().Reserve(likelySizes[bodySize])
+	if err != nil {
+		panic(err)
+	}
+
+	buf := bytes.NewBuffer(reserve)
+	buf.Reset()
+	encoder := json.NewEncoder(buf)
+	err = encoder.Encode(request)
+	if err != nil {
+		panic(err)
+	}
+
 	for {
 		err := s.Flush(false)
 		if err == ErrQueueFull {
@@ -159,27 +193,24 @@ func mustWrite(s *Stream, size int, b *testing.B) {
 }
 
 func mustRead(s *Stream, size int, b *testing.B) bool {
-	n, err := s.BufferReader().Discard(size)
+	_, err := s.BufferReader().ReadBytes(size)
 	if err == ErrStreamClosed || err == ErrEndOfStream {
 		return false
 	} else if err != nil {
 		panic(fmt.Sprintf("err: %s", err.Error()))
 	}
-	if err != nil {
-		panic(fmt.Sprintf("should discard :%d  but real discard:%d err:%s", size, n, err.Error()))
-	}
+
 	return true
 }
 
-func benchmarkParallelPingPongByShmipc(b *testing.B, reqSize, respSize int) {
-	//SetLogLevel(levelTrace)
-	client, server := newBenchmarkClientServer(uint32(reqSize))
+func benchmarkParallelPingPongByShmipc(b *testing.B, bodySize string) {
+	client, server := newBenchmarkClientServer(uint32(likelySizes[bodySize]))
 	defer func() {
 		client.Close()
 		server.Close()
 	}()
 
-	b.SetBytes(int64(reqSize + respSize))
+	b.SetBytes(int64(likelySizes[bodySize] + likelySizes[bodySize]))
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -195,11 +226,11 @@ func benchmarkParallelPingPongByShmipc(b *testing.B, reqSize, respSize int) {
 				}
 				defer stream.Close()
 				for {
-					if !mustRead(stream, reqSize, b) {
+					if !mustRead(stream, likelySizes[bodySize], b) {
 						return
 					}
 					stream.BufferReader().ReleasePreviousRead()
-					mustWrite(stream, respSize, b)
+					mustWrite(stream, bodySize, b)
 				}
 			}()
 			stream, err := client.OpenStream()
@@ -207,10 +238,8 @@ func benchmarkParallelPingPongByShmipc(b *testing.B, reqSize, respSize int) {
 				b.Fatalf("err: %v", err)
 			}
 			for ; hasNext; hasNext = pb.Next() {
-				//wg.Add(1)
-				//fmt.Println("send")
-				mustWrite(stream, reqSize, b)
-				mustRead(stream, respSize, b)
+				mustWrite(stream, bodySize, b)
+				mustRead(stream, likelySizes[bodySize], b)
 				stream.ReleaseReadAndReuse()
 			}
 			// make server side stream could receive notification.
@@ -221,43 +250,43 @@ func benchmarkParallelPingPongByShmipc(b *testing.B, reqSize, respSize int) {
 }
 
 func BenchmarkParallelPingPongByUds64B(b *testing.B) {
-	benchmarkParallelPingPongByUds(b, 64, 64)
+	benchmarkParallelPingPongByUds(b, "64B")
 }
 
 func BenchmarkParallelPingPongByUds512B(b *testing.B) {
-	benchmarkParallelPingPongByUds(b, 512, 512)
+	benchmarkParallelPingPongByUds(b, "512B")
 }
 
 func BenchmarkParallelPingPongByUds1KB(b *testing.B) {
-	benchmarkParallelPingPongByUds(b, 1<<10, 1<<10)
+	benchmarkParallelPingPongByUds(b, "1KB")
 }
 
 func BenchmarkParallelPingPongByUds4KB(b *testing.B) {
-	benchmarkParallelPingPongByUds(b, 4<<10, 4<<10)
+	benchmarkParallelPingPongByUds(b, "4KB")
 }
 
 func BenchmarkParallelPingPongByUds16KB(b *testing.B) {
-	benchmarkParallelPingPongByUds(b, 16<<10, 16<<10)
+	benchmarkParallelPingPongByUds(b, "16KB")
 }
 
 func BenchmarkParallelPingPongByUds64KB(b *testing.B) {
-	benchmarkParallelPingPongByUds(b, 64<<10, 64<<10)
+	benchmarkParallelPingPongByUds(b, "64KB")
 }
 
 func BenchmarkParallelPingPongByUds256KB(b *testing.B) {
-	benchmarkParallelPingPongByUds(b, 256<<10, 256<<10)
+	benchmarkParallelPingPongByUds(b, "256KB")
 }
 
 func BenchmarkParallelPingPongByUds512KB(b *testing.B) {
-	benchmarkParallelPingPongByUds(b, 512<<10, 512<<10)
+	benchmarkParallelPingPongByUds(b, "512KB")
 }
 
 func BenchmarkParallelPingPongByUds1MB(b *testing.B) {
-	benchmarkParallelPingPongByUds(b, 1<<20, 1<<20)
+	benchmarkParallelPingPongByUds(b, "1MB")
 }
 
 func BenchmarkParallelPingPongByUds4MB(b *testing.B) {
-	benchmarkParallelPingPongByUds(b, 4<<20, 4<<20)
+	benchmarkParallelPingPongByUds(b, "4MB")
 }
 
 func udsMustRead(conn net.Conn, buf []byte, expectedSize int) bool {
@@ -289,7 +318,7 @@ func udsMustWrite(conn net.Conn, buf []byte) {
 	}
 }
 
-func benchmarkParallelPingPongByUds(b *testing.B, reqSize, respSize int) {
+func benchmarkParallelPingPongByUds(b *testing.B, bodySize string) {
 	addr := &net.UnixAddr{Name: fmt.Sprintf("/dev/shm/uds_%d.sock", time.Now().UnixNano()), Net: "unix"}
 	defer syscall.Unlink(addr.Name)
 
@@ -310,12 +339,23 @@ func benchmarkParallelPingPongByUds(b *testing.B, reqSize, respSize int) {
 			if err != nil {
 				panic("accept conn failed:" + err.Error())
 			}
-			readBuffer := make([]byte, reqSize)
-			writeBuffer := make([]byte, respSize)
 			go func(conn net.Conn) {
 				defer conn.Close()
 				for {
-					if !udsMustRead(conn, readBuffer, reqSize) {
+					readBuffer := make([]byte, likelySizes[bodySize])
+					writeBuffer := make([]byte, likelySizes[bodySize])
+					request := pingpong{
+						Data: make([]byte, dataSizes[bodySize]),
+					}
+					buf := bytes.NewBuffer(writeBuffer)
+					buf.Reset()
+					encoder := json.NewEncoder(buf)
+					err = encoder.Encode(request)
+					if err != nil {
+						panic(err)
+					}
+
+					if !udsMustRead(conn, readBuffer, likelySizes[bodySize]) {
 						return
 					}
 					udsMustWrite(conn, writeBuffer)
@@ -324,7 +364,7 @@ func benchmarkParallelPingPongByUds(b *testing.B, reqSize, respSize int) {
 		}
 	}()
 
-	b.SetBytes(int64(reqSize + respSize))
+	b.SetBytes(int64(likelySizes[bodySize] + likelySizes[bodySize]))
 	b.ReportAllocs()
 	b.ResetTimer()
 	<-serverStartNotifyCh
@@ -334,11 +374,23 @@ func benchmarkParallelPingPongByUds(b *testing.B, reqSize, respSize int) {
 			panic("create uds connection failed:" + err.Error())
 		}
 		defer clientConn.Close()
-		readBuffer := make([]byte, respSize)
-		writeBuffer := make([]byte, reqSize)
 		for pb.Next() {
+			readBuffer := make([]byte, likelySizes[bodySize])
+			writeBuffer := make([]byte, likelySizes[bodySize])
+
+			request := pingpong{
+				Data: make([]byte, dataSizes[bodySize]),
+			}
+			buf := bytes.NewBuffer(writeBuffer)
+			buf.Reset()
+			encoder := json.NewEncoder(buf)
+			err = encoder.Encode(request)
+			if err != nil {
+				panic(err)
+			}
+
 			udsMustWrite(clientConn, writeBuffer)
-			udsMustRead(clientConn, readBuffer, respSize)
+			udsMustRead(clientConn, readBuffer, likelySizes[bodySize])
 		}
 	})
 }
